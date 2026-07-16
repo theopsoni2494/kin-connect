@@ -1,0 +1,100 @@
+import { Router } from "express";
+import { asyncHandler, HttpError } from "../middleware/errorHandler.js";
+import { requireAuth, type AuthedRequest } from "../middleware/requireAuth.js";
+import { requireMasterAdmin } from "../middleware/requireAdminDepartment.js";
+import {
+  employeeLoginSchema,
+  adminLoginSchema,
+  refreshSchema,
+  resetEmployeePasswordSchema,
+  changePasswordSchema,
+} from "../utils/validation.js";
+import {
+  loginEmployee,
+  loginAdmin,
+  refreshSession,
+  revokeRefreshToken,
+  resetEmployeePassword,
+  changeOwnPassword,
+} from "../services/auth.service.js";
+
+export const authRouter = Router();
+
+authRouter.post(
+  "/employee/login",
+  asyncHandler(async (req, res) => {
+    const { code, password } = employeeLoginSchema.parse(req.body);
+    const result = await loginEmployee(code, password);
+    if (!result) throw new HttpError(401, "invalid employee code or password");
+    res.json({
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      employee: { code: result.employee.code, label: result.employee.label },
+    });
+  }),
+);
+
+authRouter.post(
+  "/admin/login",
+  asyncHandler(async (req, res) => {
+    const { code, password } = adminLoginSchema.parse(req.body);
+    const result = await loginAdmin(code, password);
+    if (!result) throw new HttpError(401, "invalid admin code or password");
+    if (result === "no-department") {
+      throw new HttpError(403, "this admin account has no department assigned — contact the master admin");
+    }
+
+    res.json({
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      admin: {
+        id: result.admin.id,
+        code: result.admin.code,
+        name: result.admin.name,
+        isMaster: result.admin.isMaster,
+      },
+      department: result.department,
+    });
+  }),
+);
+
+authRouter.post(
+  "/refresh",
+  asyncHandler(async (req, res) => {
+    const { refreshToken } = refreshSchema.parse(req.body);
+    const result = await refreshSession(refreshToken);
+    if (!result) throw new HttpError(401, "invalid or expired refresh token");
+    res.json(result);
+  }),
+);
+
+authRouter.post(
+  "/logout",
+  asyncHandler(async (req, res) => {
+    const { refreshToken } = refreshSchema.parse(req.body);
+    await revokeRefreshToken(refreshToken);
+    res.status(204).end();
+  }),
+);
+
+authRouter.post(
+  "/admin/reset-employee-password",
+  requireAuth,
+  requireMasterAdmin,
+  asyncHandler(async (req, res) => {
+    const { employeeCode, newPassword } = resetEmployeePasswordSchema.parse(req.body);
+    await resetEmployeePassword(employeeCode, newPassword);
+    res.status(204).end();
+  }),
+);
+
+authRouter.post(
+  "/change-password",
+  requireAuth,
+  asyncHandler(async (req: AuthedRequest, res) => {
+    const { currentPassword, newPassword } = changePasswordSchema.parse(req.body);
+    const ok = await changeOwnPassword(req.auth!, currentPassword, newPassword);
+    if (!ok) throw new HttpError(401, "current password is incorrect");
+    res.status(204).end();
+  }),
+);

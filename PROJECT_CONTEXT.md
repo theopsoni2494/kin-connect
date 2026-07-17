@@ -1,7 +1,8 @@
 # PROJECT_CONTEXT.md
 
 > Single source of truth for this project. Read this before making changes. Update it whenever a significant feature ships — see "Change Log" at the bottom.
-> Last verified against the actual codebase: 2026-07-16.
+> Last verified against the actual codebase: 2026-07-17.
+> **This project is LIVE and deployed as of 2026-07-17** — see "Deployment (LIVE)" section below for URLs, exact redeploy steps, and gotchas already hit once (don't re-discover them).
 
 ---
 
@@ -33,7 +34,55 @@ Three roles exist: **Employee** (submits/tracks their own tickets), **Department
 | Validation | `zod` (both frontend forms via `@hookform/resolvers` and backend request validation) |
 | WhatsApp (dormant) | `twilio` SDK — code complete, disabled until `TWILIO_*` env vars are set |
 | Email (dormant) | `nodemailer` (SMTP) — code complete, disabled until `SMTP_*` env vars are set |
-| Deployment | Not yet deployed — local dev only (Vite dev server on :8080, Express on :4000) |
+| Deployment | **LIVE** — frontend on Cloudflare Workers, backend on Render. See "Deployment (LIVE)" section below. Local dev still works the same as before (Vite on :8080, Express on :4000). |
+
+---
+
+# Deployment (LIVE)
+
+Deployed 2026-07-17 under real time pressure (client wanted their manager to see it same-day). Both pieces are live and were verified end-to-end (real login through the real deployed frontend, hitting the real deployed backend, hitting the real Supabase DB).
+
+**Live URLs:**
+- Frontend: `https://theopsoni2494-kin-connect.kinconnect.workers.dev` (Cloudflare Workers, account subdomain `kinconnect.workers.dev`)
+- Backend API: `https://kin-connect.onrender.com` (Render, free web service tier)
+- Database: same Supabase project as before, no change (`youlkxaovjehxnqfmsbu`)
+
+**GitHub**: `https://github.com/theopsoni2494/kin-connect` — this is the source of truth for redeployment. Backend (Render) auto-redeploys on push to `master`. Frontend (Cloudflare Workers) does **not** auto-redeploy on push — it's a manual CLI deploy (see below), there is no CI hook wired up for it.
+
+## How to redeploy the backend (Render)
+Render is connected to GitHub and auto-deploys on push to `master`. To trigger manually: Render dashboard → the `kin-connect` service → **Manual Deploy → Deploy latest commit**.
+- Root Directory: `server`
+- Build Command: `npm install --include=dev && npm run build` — **the `--include=dev` is load-bearing**, not cosmetic (see gotcha below)
+- Start Command: `npm run start`
+- Env vars are set directly in Render's dashboard (Environment tab), **not** read from `server/.env` — that file only affects local dev. Whenever `server/.env`'s real values change (e.g. rotating a secret), the same change has to be manually re-entered in Render's dashboard too, nothing syncs automatically.
+
+## How to redeploy the frontend (Cloudflare Workers)
+No dashboard step needed once Wrangler is authenticated once per machine (`npx wrangler login` — opens browser, free Cloudflare account, one-time per machine). Then, from the project root:
+```
+npm run build
+npx nitro deploy --prebuilt
+```
+This project's Vite config (`@lovable.dev/vite-tanstack-config`) already defaults Nitro's build target to Cloudflare — no extra config needed, `npm run build` alone produces a Workers-ready `.output/` with `wrangler.json` generated automatically. The deploy command prints the live URL and a version ID on success.
+
+**Important**: the frontend bakes `VITE_API_BASE_URL` into the build at build time (Vite inlines `VITE_*` vars) — it is **not** read at runtime. If the backend URL ever changes, you must update the root `.env` (see below) and rebuild + redeploy the frontend; editing it after the fact does nothing.
+
+## Root `.env` (frontend) — NOT committed to git, exists only locally
+There was no root `.env` before this deployment (frontend fell back to `localhost:4000/v1` by default). One now exists locally at the project root with:
+```
+VITE_BRAND_NAME="Kin Connect"
+VITE_API_BASE_URL=https://kin-connect.onrender.com/v1
+```
+This file is **gitignored** (root `.gitignore` now includes `.env`, added 2026-07-17) — a fresh clone on a new machine won't have it. If you need to rebuild+redeploy the frontend from a new machine, recreate this file first with the same content (or point `VITE_API_BASE_URL` at `http://localhost:4000/v1` if you just want local dev against a local backend instead).
+
+## Two real gotchas hit during this deployment — don't re-discover them
+
+1. **`NODE_ENV=production` makes `npm install` skip devDependencies.** The backend's TypeScript build (`tsc`) needs `@types/express`, `@types/bcryptjs`, `@types/jsonwebtoken`, `@types/uuid` — all devDependencies. With `NODE_ENV=production` set (which we do want, for the running app), a plain `npm install` silently skips them and the build fails with a wall of `TS7016` "Could not find a declaration file" errors. Fix: Build Command must be `npm install --include=dev && npm run build`, not just `npm install && npm run build`.
+
+2. **Supabase's direct-connection string (`db.<ref>.supabase.co:5432`) is IPv6-only** and Render's outbound network is IPv4-only — connecting with the direct connection string fails silently (every DB-touching endpoint returns a generic 500 "internal server error", while `/health` — which doesn't touch the DB — works fine, which is the tell). Fix: use Supabase's **Session Pooler** connection string instead (Supabase dashboard → Connect button → Session pooler tab), which resolves over IPv4. Format: `postgresql://postgres.<project-ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres` — note the username becomes `postgres.<project-ref>`, not just `postgres`. This is what `server/.env`'s `DATABASE_URL` is set to now (both locally and on Render) — **do not revert this back to the direct-connection format**, it will break the deployed backend again (though it still works fine for local dev either way, since local dev typically has IPv6 or the direct connection just happens to work outbound from a home/office network).
+
+## Known temporary state (flagged for cleanup, not urgent)
+- **`CORS_ORIGIN` is set to `*`** on Render (allow any origin) — set this way to unblock the initial deploy fast. Should be tightened to the actual frontend origin (`https://theopsoni2494-kin-connect.kinconnect.workers.dev`) once there's time; not a real risk for a small internal demo tool, but not best practice long-term.
+- **Render free tier spins down after ~15 min idle** — first request after a quiet period takes 30-50s to wake up (subsequent requests are fast). This is a free-tier limitation, not a bug. If this becomes a problem, either upgrade Render's plan or switch to a host without cold starts.
 
 ---
 
@@ -227,11 +276,12 @@ All tables live in the `public` schema of the Supabase Postgres database. RLS is
 □ **Twilio WhatsApp notifications** — fully coded (provider, dispatcher integration, DB outbox) but **not configured** (`TWILIO_ACCOUNT_SID`/`TWILIO_AUTH_TOKEN`/`TWILIO_WHATSAPP_FROM` are blank). Waiting on real Twilio credentials from the user.
 □ **SMTP email fallback** — same status as above: coded, dormant, unconfigured.
 □ Real device mobile testing pass (layout was fixed and verified via responsive dev-tools emulation; a real-phone pass over LAN is still recommended)
-□ Production deployment (currently local-dev only; no hosting/CI configured)
+□ ~~Production deployment~~ — **done 2026-07-17**, see "Deployment (LIVE)" section above.
 □ Analytics / reporting dashboard beyond the existing CSV export
 □ Audit log UI (the `notifications` table is effectively an audit trail already, but there's no admin-facing "who did what when" view)
 □ Admin ability to reassign their own department (currently master-only, by design)
 □ Multi-department admin support (schema allows it via `admin_departments`, but no UI path creates more than one row per admin)
+□ **Self-service employee registration — discussed 2026-07-17, NOT implemented, explicitly on hold pending client go-ahead.** Client asked: can a brand-new employee (not pre-created by an admin) log in with an employee code + phone number and have the account auto-created on the spot, visible to master admin afterward? Answer given: technically easy (~30-60 min for a bare version), but it removes the current access-control gate (right now, master/dept admin explicitly vetting who gets an account is the only thing standing between "random person" and "can submit tickets as if they work here") — recommended an approval-gated version instead (auto-create the row but `isActive: false`, master admin approves via the existing freeze/unfreeze toggle, just inverted at creation) rather than instant-active self-registration. **Do not implement either version without an explicit "yes, do it" from the client** — this was flagged as a real product decision, not just a coding task, and it directly reopens the WhatsApp-number-as-initial-password question we already resolved once (see Important Decisions).
 
 ---
 
@@ -397,7 +447,7 @@ Room joins happen in `sockets/index.ts` on connect: employees join `employee:<co
 | `NODE_ENV` | development/production/test |
 | `CORS_ORIGIN` | Must match the frontend's actual dev-server origin (e.g. `http://localhost:8080`) — mismatch causes CORS failures if the frontend port changes |
 | `BRAND_NAME` | Used in notification message templates |
-| `DATABASE_URL` | Supabase Postgres connection string (Session Pooler or direct) |
+| `DATABASE_URL` | Supabase Postgres connection string. **Must be the Session Pooler string, not direct connection, on Render** (direct connection is IPv6-only and fails on Render's IPv4-only network — see Deployment gotchas above). Local dev works with either. |
 | `SUPABASE_URL` | Supabase project URL, for Storage client only |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server-only secret key for Supabase Storage access — never exposed to frontend |
 | `SUPABASE_STORAGE_BUCKET` | Bucket name for attachments (default `attachments`) |
@@ -419,6 +469,8 @@ Room joins happen in `sockets/index.ts` on connect: employees join `employee:<co
 | **Twilio (WhatsApp)** | 🟡 Coded, dormant | Provider class no-ops cleanly and falls through to email when unconfigured. Activate by filling `TWILIO_*` env vars. |
 | **SMTP (Nodemailer)** | 🟡 Coded, dormant | Same pattern — activate by filling `SMTP_*` env vars. |
 | **Socket.IO** | ✅ Active | Self-hosted (not a third party), runs on the same Express HTTP server. |
+| **Render** | ✅ Active | Hosts the backend, free web service tier. Auto-deploys on push to `master`. Cold-starts after ~15 min idle (free tier limitation). |
+| **Cloudflare Workers** | ✅ Active | Hosts the frontend. Manual deploy only (`npx nitro deploy --prebuilt`), no auto-deploy-on-push configured. Free tier, no cold starts. |
 
 ---
 
@@ -462,6 +514,7 @@ Claude (or any future contributor) must always follow these rules on this projec
 12. **Never run destructive Supabase/SQL operations** (drop table, delete rows in bulk, disable RLS, rotate production credentials) without explicit, scoped user confirmation — even if asked to "just fix it."
 13. **Secrets stay server-side.** `SUPABASE_SERVICE_ROLE_KEY`, JWT secrets, and the database password must never be sent to or used from frontend code.
 14. **This file should be updated** whenever a feature listed under "Pending Features" ships, or a new architectural decision is made — move it to "Current Features" / "Important Decisions" / "Change Log" accordingly.
+15. **This project is live (see "Deployment (LIVE)" section)** — local code changes never affect the live site until explicitly redeployed (`git push` for backend auto-deploy on Render; `npm run build && npx nitro deploy --prebuilt` manually for the Cloudflare Workers frontend, no auto-deploy configured there). Editing/testing locally is always safe and has zero effect on production. Before making backend/DB changes, re-read the Deployment section's two gotchas (devDependencies + `NODE_ENV=production`, and Supabase direct-connection IPv6 vs Session Pooler) so they aren't re-discovered the hard way. Don't casually trigger a redeploy of a working live site without the user asking — a broken deploy is disruptive even though rollback is easy (just redeploy the previous commit/version).
 
 ---
 
@@ -485,6 +538,8 @@ Claude (or any future contributor) must always follow these rules on this projec
 - **Breaking change to admin login**: Admins (including master admin) now log in with an employee-code-style **admin code** (e.g. `KN-01`) instead of an office-mail address. Added `admins.code` (unique, nullable at the DB level) via migration `0002_flashy_silhouette.sql`; backfilled all 8 existing admin accounts (`server/src/db/backfill-admin-codes.ts`) — master admin got `KN-01`, the 7 department admins got `KN-02`–`KN-08` in department `sort_order`. `admins.email` was relaxed to nullable (not dropped — historical data preserved, still used as an optional contact for the dormant email-notification channel) and is no longer collected, shown, or used for login anywhere in the app.
 - **Breaking change to password model**: Employee passwords are no longer silently tied to the WhatsApp-number field — added self-service password change (`POST /v1/auth/change-password`) usable by any employee or admin, verified against their own current password hash. Master admin's existing "reset password" flows for employees and admins are unchanged in shape but are now explicitly documented as reset-only (never able to view a current password, since passwords remain one-way bcrypt hashes throughout).
 - **Feature**: Profile photo upload for every role. Added `profiles.avatar_path` (nullable) via the same migration; new `POST /v1/profiles/me/avatar` endpoint (multipart upload, reuses the existing Supabase Storage attachment pipeline under an `avatars/` folder) and a signed `avatarUrl` now included in every profile response. Admins and the master admin also gained a "Your profile" panel (identical in shape to the employee one) they didn't have before, so every role can now edit their own name/phone/office-mail and photo, and change their own password, from one place.
+- **UI iteration on the above** (2026-07-17, later same day): removed the `hero-bakery.jpg` framed accent image from the login page's left panel entirely (client felt it didn't look good); significantly lightened the login page's darkening/blur treatment (`bg-black/55` → `bg-black/35`, `backdrop-blur-md` → `backdrop-blur-[2px]`) so the store photo reads clearly instead of being washed out; the post-login app shells' background wash was changed from the flat `bg-gradient-brand` (red/blue/green) to the same `hero-aisle.jpg` photo at low opacity (`opacity-[0.14]`), matching the blue-toned mood of the login page instead of the brand gradient.
+- **Production deployment** (2026-07-17): First live deployment. Frontend → Cloudflare Workers (`https://theopsoni2494-kin-connect.kinconnect.workers.dev`), backend → Render (`https://kin-connect.onrender.com`), database unchanged (same Supabase project). Full details, exact redeploy commands, and two real gotchas hit along the way (devDependencies getting skipped under `NODE_ENV=production`, and Supabase's direct-connection string being IPv6-only and failing on Render) are documented in the "Deployment (LIVE)" section near the top of this file — read that section before touching deployment again. `CORS_ORIGIN` is temporarily `*` on Render pending tightening to the real frontend origin.
 
 ---
 

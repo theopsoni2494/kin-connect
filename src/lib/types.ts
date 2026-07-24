@@ -63,7 +63,12 @@ export interface Admin {
   name: string;
   isMaster: boolean;
   isActive: boolean;
+<<<<<<< HEAD
   departments: { id: number; name: string }[];
+=======
+  departmentId: number | null;
+  departmentName: string | null;
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 }
 
 export interface Profile {
@@ -81,9 +86,15 @@ export interface Session {
   name: string;
   identifier: string; // employee code, or admin uuid id (used for self-comparisons)
   code?: string; // admin's login code (KN-xx) — display only
+<<<<<<< HEAD
   departments?: { id: number; name: string }[];
   isMaster?: boolean;
   // Passwordless first login hasn't been claimed yet — dashboard/admin
   // shells redirect to /set-password until this is cleared.
   mustSetPassword?: boolean;
+=======
+  departmentId?: number;
+  departmentName?: string;
+  isMaster?: boolean;
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 }

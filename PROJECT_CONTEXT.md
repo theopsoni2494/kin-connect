@@ -285,6 +285,7 @@ All tables live in the `public` schema of the Supabase Postgres database. RLS is
 
 ---
 
+<<<<<<< HEAD
 # Required Update (BUILT LOCALLY, 2026-07-24 — Not Yet Deployed)
 
 > **Status**: all 7 items below are implemented and verified against an isolated local Postgres test database (not the live Supabase DB). **Not deployed** — no migration has been applied to the live database, nothing has been pushed to GitHub, and items 3 and 4's live-DB scripts (`server/src/db/wipe-activity-data.ts`, `server/src/db/consolidate-admins.ts`) have deliberately NOT been run against production. Trigger phrase **"Required update"** in a future session now means: confirm current status against this file (things may have moved since), then walk through actually deploying — migration, then the two scripts (items 3 & 4) only with fresh explicit confirmation, since they're irreversible on live data.
@@ -321,6 +322,8 @@ Four more changes requested the same day, after the Required Update pack above, 
 
 ---
 
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 # API Documentation
 
 Base URL: `{VITE_API_BASE_URL}` (default `http://localhost:4000/v1`). All routes below are relative to this base. Auth via `Authorization: Bearer <accessToken>` unless noted.
@@ -373,17 +376,27 @@ Base URL: `{VITE_API_BASE_URL}` (default `http://localhost:4000/v1`). All routes
 | Method | Route | Purpose | Auth |
 |---|---|---|---|
 | GET | `/admin/employees` | List all employees | Admin |
+<<<<<<< HEAD
 | POST | `/admin/employees` | Create employee (passwordless — first login claims it) | Admin |
 | POST | `/admin/employees/bulk-import` | Multipart spreadsheet upload (`.xlsx`/`.xls`/`.csv`, field name `file`) — creates employees from a code column, default password `0000000000`, skips existing/invalid codes, returns `{created, skippedExisting, skippedInvalid}` | Admin |
+=======
+| POST | `/admin/employees` | Create employee | Admin |
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 | PATCH | `/admin/employees/:code` | Update (label/whatsapp/isActive) | Admin |
 | DELETE | `/admin/employees/:code` | Delete (fails gracefully if they have tickets) | Admin |
 
 ### Admins (`/admin/admins`) — master-only, entire router
 | Method | Route | Purpose |
 |---|---|---|
+<<<<<<< HEAD
 | GET | `/admin/admins` | List all admins with resolved `departments: {id,name}[]` (each admin's `code`, not email, is the identifier shown) |
 | POST | `/admin/admins` | Create admin (passwordless) — takes `{code, name, isMaster, departmentIds?: number[]}`. Non-master requires at least one department; can assign any subset, not just one |
 | PATCH | `/admin/admins/:id` | Update name/isActive/`departmentIds` (replaces the full set); blocks self-freeze (code is immutable after creation) |
+=======
+| GET | `/admin/admins` | List all admins with resolved department (each admin's `code`, not email, is the identifier shown) |
+| POST | `/admin/admins` | Create admin (master or single-department) — takes `{code, password, name, isMaster, departmentId?}` |
+| PATCH | `/admin/admins/:id` | Update name/isActive/department; blocks self-freeze (code is immutable after creation) |
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 | DELETE | `/admin/admins/:id` | Delete; blocks self-delete; friendly error on FK conflict |
 | POST | `/admin/admins/:id/reset-password` | Reset an admin's password (sets new, never reveals current) |
 
@@ -557,8 +570,11 @@ Claude (or any future contributor) must always follow these rules on this projec
 
 # Change Log
 
+<<<<<<< HEAD
 - **Built locally, not deployed** (2026-07-24): The full "Required Update" pack (7 items — passwordless first login, password eye-toggle, prepared-but-not-run data wipe script, 7→1 admin consolidation logic + prepared-but-not-run script, T&C checkbox, sticky nav, official-mail lock) plus 4 same-day follow-ups (circular pre-checked T&C checkbox, bulk employee import from spreadsheet, multi-department admin assignment generalized beyond the single-admin-all-departments case, sticky footer). Set up an isolated local Postgres test database (`kinconnect_test`, via Homebrew) specifically so all of this — including the two irreversible live-DB scripts — could be verified for real without touching production data. Everything typechecks and was verified end-to-end in-browser and via direct API calls against the test DB. See "Required Update" and "Additional Changes" sections above for full details. **Nothing has been pushed to GitHub or deployed** — Render and Cloudflare are still running the pre-existing code from the 2026-07-17 deploy.
 - **Bug fix** (2026-07-24): Employee/admin "Delete" buttons in Manage Credentials and Admin & Legal were silently doing nothing in at least one real browser environment — root cause was reliance on the native `window.confirm()` dialog, which wasn't firing/was being silently dismissed there. Replaced with the app's own `AlertDialog` component (already in the codebase, just unused for this) so deletion no longer depends on browser-native popup behavior.
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 - **Initial setup**: Connected the existing Lovable-scaffolded frontend + hand-built Express/Drizzle backend to a real Supabase Postgres database; ran migrations; seeded demo data.
 - **Critical fix**: Diagnosed and fixed the router-mount-order bug that made admin/master dashboards appear completely broken (silently 403'd).
 - **Critical fix**: Diagnosed and fixed the socket reconnect-storm bug causing unreliable real-time delivery of admin replies to employees.

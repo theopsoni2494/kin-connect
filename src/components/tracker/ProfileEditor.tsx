@@ -2,7 +2,10 @@ import { useRef, useState } from "react";
 import { Camera, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 import { useProfile, useUploadAvatar, useChangePassword } from "@/lib/tracker-queries";
+<<<<<<< HEAD
 import { PasswordInput } from "./PasswordInput";
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 
 export function AvatarUpload({ name }: { name: string }) {
   const { data: profile } = useProfile();
@@ -87,26 +90,49 @@ export function ChangePasswordSection() {
   return (
     <div className="mt-1 space-y-2 rounded-xl border bg-muted/30 p-3">
       <p className="text-xs font-medium text-muted-foreground">Change password</p>
+<<<<<<< HEAD
       <PasswordInput
+=======
+      <input
+        type="password"
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
         value={currentPassword}
         onChange={(e) => setCurrentPassword(e.target.value)}
         onKeyDown={preventOuterSubmit}
         placeholder="Current password"
+<<<<<<< HEAD
         inputClassName="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none ring-primary/30 focus:ring-2"
       />
       <PasswordInput
+=======
+        className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none ring-primary/30 focus:ring-2"
+      />
+      <input
+        type="password"
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
         value={newPassword}
         onChange={(e) => setNewPassword(e.target.value)}
         onKeyDown={preventOuterSubmit}
         placeholder="New password"
+<<<<<<< HEAD
         inputClassName="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none ring-primary/30 focus:ring-2"
       />
       <PasswordInput
+=======
+        className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none ring-primary/30 focus:ring-2"
+      />
+      <input
+        type="password"
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
         onKeyDown={preventOuterSubmit}
         placeholder="Confirm new password"
+<<<<<<< HEAD
         inputClassName="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none ring-primary/30 focus:ring-2"
+=======
+        className="w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none ring-primary/30 focus:ring-2"
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
       />
       <div className="flex justify-end gap-2 pt-1">
         <button

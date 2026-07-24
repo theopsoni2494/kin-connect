@@ -25,7 +25,10 @@
     "socket.io": "^4.8.0",
     "twilio": "^5.3.4",
     "uuid": "^9.0.1",
+<<<<<<< HEAD
     "xlsx": "^0.18.5",
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
     "zod": "^3.24.2"
   },
   "devDependencies": {

@@ -1,6 +1,10 @@
 import { Router } from "express";
 import { eq } from "drizzle-orm";
+<<<<<<< HEAD
 import { requireAuth, requirePasswordSet, type AuthedRequest } from "../middleware/requireAuth.js";
+=======
+import { requireAuth, type AuthedRequest } from "../middleware/requireAuth.js";
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 import { requireMasterAdmin } from "../middleware/requireAdminDepartment.js";
 import { asyncHandler, HttpError } from "../middleware/errorHandler.js";
 import { upload } from "../middleware/upload.js";
@@ -11,7 +15,11 @@ import { uploadAttachmentBuffer, getSignedAttachmentUrl } from "../services/stor
 
 export const profilesRouter = Router();
 
+<<<<<<< HEAD
 profilesRouter.use(requireAuth, requirePasswordSet);
+=======
+profilesRouter.use(requireAuth);
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 
 function identifierFor(req: AuthedRequest): string {
   return req.auth!.sub;
@@ -65,6 +73,7 @@ profilesRouter.patch(
     const patch = setProfileSchema.parse(req.body);
     const identifier = identifierFor(req);
     const [existing] = await db.select().from(profiles).where(eq(profiles.identifier, identifier)).limit(1);
+<<<<<<< HEAD
     // Official mail is locked after first entry, for every role — once set,
     // only the master-only PATCH /:identifier override channel can change it.
     if (existing?.officeMail && patch.officeMail !== undefined && patch.officeMail !== existing.officeMail) {
@@ -73,6 +82,8 @@ profilesRouter.patch(
         "official mail is locked after first entry — contact the master admin to change it",
       );
     }
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
     const [row] = existing
       ? await db
           .update(profiles)

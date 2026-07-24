@@ -1,14 +1,20 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { loginEmployee, loginAdmin } from "@/lib/auth-client";
+<<<<<<< HEAD
 import { getSession } from "@/lib/session";
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 import { BRAND_NAME } from "@/lib/brand";
 import { ShieldCheck, User as UserIcon } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+<<<<<<< HEAD
 import { PasswordInput } from "@/components/tracker/PasswordInput";
 import { TermsDialog } from "@/components/tracker/TermsDialog";
 import { Checkbox } from "@/components/ui/checkbox";
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -29,21 +35,35 @@ function AuthPage() {
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+<<<<<<< HEAD
   const [agreed, setAgreed] = useState(true);
   const [termsOpen, setTermsOpen] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!agreed) return toast.error("Please agree to the Terms and Guidelines to continue");
+=======
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
     setSubmitting(true);
     try {
       if (role === "admin") {
         await loginAdmin(id, password);
+<<<<<<< HEAD
         navigate({ to: getSession()?.mustSetPassword ? "/set-password" : "/admin" });
         return;
       }
       await loginEmployee(id, password);
       navigate({ to: getSession()?.mustSetPassword ? "/set-password" : "/dashboard" });
+=======
+        navigate({ to: "/admin" });
+        return;
+      }
+      await loginEmployee(id, password);
+      navigate({ to: "/dashboard" });
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
     } catch (err) {
       toast.error((err as Error).message || "Invalid credentials");
     } finally {
@@ -140,6 +160,7 @@ function AuthPage() {
             </div>
             <div>
               <label className="mb-1.5 block text-xs font-medium text-white/90">Password</label>
+<<<<<<< HEAD
               <PasswordInput
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -150,11 +171,24 @@ function AuthPage() {
               {role === "employee" && (
                 <p className="mt-1.5 text-[11px] text-white/80">
                   First time here? Leave the password blank to sign in — you'll be asked to set one right after.
+=======
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full rounded-xl border border-white/50 bg-white/70 px-3.5 py-2.5 text-sm text-foreground outline-none ring-primary/30 transition placeholder:text-muted-foreground focus:bg-white focus:ring-2"
+              />
+              {role === "employee" && (
+                <p className="mt-1.5 text-[11px] text-white/80">
+                  New here? Your admin has your starting password — you can change it anytime from your profile.
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
                 </p>
               )}
             </div>
           </div>
 
+<<<<<<< HEAD
           <label className="mt-4 flex items-start gap-2 text-xs text-white/90">
             <Checkbox
               checked={agreed}
@@ -173,6 +207,8 @@ function AuthPage() {
             </span>
           </label>
 
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
           <button
             type="submit"
             disabled={submitting}
@@ -182,8 +218,11 @@ function AuthPage() {
           </button>
         </form>
       </div>
+<<<<<<< HEAD
 
       <TermsDialog open={termsOpen} onOpenChange={setTermsOpen} />
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
     </div>
   );
 }

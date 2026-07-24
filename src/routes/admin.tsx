@@ -1,5 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+<<<<<<< HEAD
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+=======
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 import type { DateRange } from "react-day-picker";
 import {
   Inbox,
@@ -26,8 +30,11 @@ import {
   Bell,
   Menu,
   Save,
+<<<<<<< HEAD
   Upload,
   Search,
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 } from "lucide-react";
 import { getSession, subscribeSession } from "@/lib/session";
 import { logout, resetEmployeePassword } from "@/lib/auth-client";
@@ -41,8 +48,11 @@ import {
   useCreateEmployee,
   useUpdateEmployee,
   useDeleteEmployee,
+<<<<<<< HEAD
   useBulkImportEmployees,
   type BulkImportResult,
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
   useEmployees,
   useAdmins,
   useCreateAdmin,
@@ -66,6 +76,7 @@ import { DateRangePicker } from "@/components/tracker/DateRangePicker";
 import { SentAlertsTable } from "@/components/tracker/SentAlertsTable";
 import { AvatarUpload, ChangePasswordSection } from "@/components/tracker/ProfileEditor";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+<<<<<<< HEAD
 import {
   AlertDialog,
   AlertDialogAction,
@@ -76,6 +87,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -120,6 +133,7 @@ function useSession() {
   return useSyncExternalStore(subscribeSession, getSession, getSession);
 }
 
+<<<<<<< HEAD
 function formatAdminDepartments(departments?: { id: number; name: string }[]): string {
   if (!departments || departments.length === 0) return "Admin console";
   if (departments.length === 1) return `${departments[0].name} Admin`;
@@ -127,6 +141,8 @@ function formatAdminDepartments(departments?: { id: number; name: string }[]): s
   return `${departments.length} Departments Admin`;
 }
 
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 function AdminPage() {
   const navigate = useNavigate();
   const session = useSession();
@@ -139,7 +155,10 @@ function AdminPage() {
 
   useEffect(() => {
     if (!session) navigate({ to: "/auth" });
+<<<<<<< HEAD
     if (session?.mustSetPassword) navigate({ to: "/set-password" });
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
     if (session?.role === "employee") navigate({ to: "/dashboard" });
   }, [session, navigate]);
 
@@ -157,7 +176,11 @@ function AdminPage() {
         <div>
           <p className="text-sm font-semibold">{BRAND_NAME}</p>
           <p className="text-xs text-muted-foreground">
+<<<<<<< HEAD
             {session?.isMaster ? "Master Admin" : formatAdminDepartments(session?.departments)}
+=======
+            {session?.isMaster ? "Master Admin" : session?.departmentName ? `${session.departmentName} Admin` : "Admin console"}
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
           </p>
         </div>
       </div>
@@ -222,7 +245,11 @@ function AdminPage() {
   );
 
   return (
+<<<<<<< HEAD
     <div className="relative flex h-screen flex-col overflow-hidden md:flex-row">
+=======
+    <div className="relative flex min-h-screen flex-col overflow-hidden md:flex-row">
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
       {/* Store-photo colour wash (same photo/tone as the login page) plus soft glow accents */}
       <div
         className="pointer-events-none fixed inset-0 bg-cover bg-center opacity-[0.14]"
@@ -260,8 +287,12 @@ function AdminPage() {
       </aside>
 
       <main className="flex-1 overflow-y-auto">
+<<<<<<< HEAD
         <div className="flex min-h-full flex-col">
         <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
+=======
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
           {responding ? (
             <RespondView ticket={responding} onBack={() => setResponding(null)} />
           ) : (
@@ -280,7 +311,10 @@ function AdminPage() {
           )}
         </div>
         <p className="pb-6 text-center text-xs text-muted-foreground">© 2026 Made by Yash Soni</p>
+<<<<<<< HEAD
         </div>
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
       </main>
 
       {profileOpen && session && (
@@ -362,6 +396,7 @@ function AdminProfilePanel({ code, name, onClose }: { code: string; name: string
               value={officeMail}
               onChange={(e) => setOfficeMail(e.target.value)}
               placeholder="you@company.com"
+<<<<<<< HEAD
               disabled={!!profile?.officeMail}
               className="w-full rounded-xl border bg-background px-3.5 py-2.5 text-sm outline-none ring-primary/30 focus:ring-2 disabled:opacity-60"
             />
@@ -370,6 +405,10 @@ function AdminProfilePanel({ code, name, onClose }: { code: string; name: string
                 Locked after first entry — contact the master admin to change it.
               </p>
             )}
+=======
+              className="w-full rounded-xl border bg-background px-3.5 py-2.5 text-sm outline-none ring-primary/30 focus:ring-2"
+            />
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
           </div>
           <div>
             <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Password</label>
@@ -611,6 +650,7 @@ function CredentialsView() {
   const { data: employees = [] } = useEmployees();
   const deleteEmployee = useDeleteEmployee();
   const updateEmployee = useUpdateEmployee();
+<<<<<<< HEAD
   const bulkImport = useBulkImportEmployees();
   const [editing, setEditing] = useState<Employee | null>(null);
   const [creating, setCreating] = useState(false);
@@ -659,6 +699,11 @@ function CredentialsView() {
       setDeleting(null);
     }
   }
+=======
+  const [editing, setEditing] = useState<Employee | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [resetting, setResetting] = useState<Employee | null>(null);
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 
   async function toggleActive(e: Employee) {
     const nextActive = !(e.isActive ?? true);
@@ -672,6 +717,7 @@ function CredentialsView() {
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Manage credentials</h1>
           <p className="mt-2 text-sm text-muted-foreground">
+<<<<<<< HEAD
             Add employees, reset a forgotten password, or freeze/delete an account — visible only here, in the master admin console.
           </p>
         </div>
@@ -726,11 +772,25 @@ function CredentialsView() {
         </div>
       )}
 
+=======
+            Only the master admin can create, edit, or delete employee logins.
+          </p>
+        </div>
+        <button
+          onClick={() => setCreating(true)}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:opacity-95"
+        >
+          <Plus className="h-4 w-4" /> New employee
+        </button>
+      </div>
+
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
       {employees.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed bg-card/40 py-16 text-center text-sm text-muted-foreground">
           No employees yet — create the first one.
         </div>
       ) : (
+<<<<<<< HEAD
         <>
           <div className="relative mt-6 max-w-sm">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -750,6 +810,9 @@ function CredentialsView() {
             </div>
           ) : (
         <div className="mt-4 overflow-x-auto rounded-2xl border bg-card shadow-sm">
+=======
+        <div className="mt-6 overflow-x-auto rounded-2xl border bg-card shadow-sm">
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
           <table className="w-full min-w-[640px] text-sm">
             <thead className="border-b bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
               <tr>
@@ -761,7 +824,11 @@ function CredentialsView() {
               </tr>
             </thead>
             <tbody>
+<<<<<<< HEAD
               {filteredEmployees.map((e) => {
+=======
+              {employees.map((e) => {
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
                 const active = e.isActive ?? true;
                 return (
                   <tr key={e.code} className="border-b last:border-0 transition hover:bg-muted/30">
@@ -807,7 +874,20 @@ function CredentialsView() {
                         )}
                       </button>
                       <button
+<<<<<<< HEAD
                         onClick={() => setDeleting(e)}
+=======
+                        onClick={async () => {
+                          if (confirm(`Delete ${e.code}? This cannot be undone.`)) {
+                            try {
+                              await deleteEmployee.mutateAsync(e.code);
+                              toast.success(`${e.code} deleted`);
+                            } catch (err) {
+                              toast.error((err as Error).message);
+                            }
+                          }
+                        }}
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
                         className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-destructive hover:bg-destructive/10"
                       >
                         <Trash2 className="h-3.5 w-3.5" /> Delete
@@ -819,8 +899,11 @@ function CredentialsView() {
             </tbody>
           </table>
         </div>
+<<<<<<< HEAD
           )}
         </>
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
       )}
 
       {(creating || editing) && (
@@ -836,6 +919,7 @@ function CredentialsView() {
       {resetting && (
         <ResetPasswordForm employee={resetting} onClose={() => setResetting(null)} />
       )}
+<<<<<<< HEAD
 
       <AlertDialog open={!!deleting} onOpenChange={(open) => !open && setDeleting(null)}>
         <AlertDialogContent>
@@ -857,6 +941,8 @@ function CredentialsView() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
     </div>
   );
 }
@@ -868,6 +954,7 @@ function AdminsView({ currentAdminId }: { currentAdminId: string }) {
   const [editing, setEditing] = useState<Admin | null>(null);
   const [creating, setCreating] = useState(false);
   const [resetting, setResetting] = useState<Admin | null>(null);
+<<<<<<< HEAD
   const [deleting, setDeleting] = useState<Admin | null>(null);
 
   async function confirmDelete() {
@@ -882,6 +969,8 @@ function AdminsView({ currentAdminId }: { currentAdminId: string }) {
       setDeleting(null);
     }
   }
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 
   async function toggleActive(a: Admin) {
     try {
@@ -933,11 +1022,15 @@ function AdminsView({ currentAdminId }: { currentAdminId: string }) {
                     <td className="px-5 py-3 font-mono font-medium">{a.code}</td>
                     <td className="px-5 py-3 text-muted-foreground">{a.name}</td>
                     <td className="px-5 py-3 text-muted-foreground">
+<<<<<<< HEAD
                       {a.isMaster
                         ? "All departments"
                         : a.departments.length > 0
                           ? a.departments.map((d) => d.name).join(", ")
                           : "—"}
+=======
+                      {a.isMaster ? "All departments" : (a.departmentName ?? "—")}
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
                     </td>
                     <td className="px-5 py-3">
                       <span
@@ -980,7 +1073,20 @@ function AdminsView({ currentAdminId }: { currentAdminId: string }) {
                             )}
                           </button>
                           <button
+<<<<<<< HEAD
                             onClick={() => setDeleting(a)}
+=======
+                            onClick={async () => {
+                              if (confirm(`Delete ${a.code}? This cannot be undone.`)) {
+                                try {
+                                  await deleteAdmin.mutateAsync(a.id);
+                                  toast.success(`${a.code} deleted`);
+                                } catch (err) {
+                                  toast.error((err as Error).message);
+                                }
+                              }
+                            }}
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
                             className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-destructive hover:bg-destructive/10"
                           >
                             <Trash2 className="h-3.5 w-3.5" /> Delete
@@ -1007,6 +1113,7 @@ function AdminsView({ currentAdminId }: { currentAdminId: string }) {
       )}
 
       {resetting && <AdminResetPasswordForm admin={resetting} onClose={() => setResetting(null)} />}
+<<<<<<< HEAD
 
       <AlertDialog open={!!deleting} onOpenChange={(open) => !open && setDeleting(null)}>
         <AlertDialogContent>
@@ -1028,6 +1135,8 @@ function AdminsView({ currentAdminId }: { currentAdminId: string }) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
     </div>
   );
 }
@@ -1036,6 +1145,7 @@ function AdminForm({ initial, onClose }: { initial?: Admin; onClose: () => void 
   const isEdit = !!initial;
   const { data: departments = [] } = useDepartments();
   const [code, setCode] = useState(initial?.code ?? "");
+<<<<<<< HEAD
   const [name, setName] = useState(initial?.name ?? "");
   const [isMaster, setIsMaster] = useState(initial?.isMaster ?? false);
   const [departmentIds, setDepartmentIds] = useState<number[]>(initial?.departments.map((d) => d.id) ?? []);
@@ -1046,6 +1156,15 @@ function AdminForm({ initial, onClose }: { initial?: Admin; onClose: () => void 
     setDepartmentIds((prev) => (prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]));
   }
 
+=======
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState(initial?.name ?? "");
+  const [isMaster, setIsMaster] = useState(initial?.isMaster ?? false);
+  const [departmentId, setDepartmentId] = useState<number | "">(initial?.departmentId ?? "");
+  const createAdmin = useCreateAdmin();
+  const updateAdmin = useUpdateAdmin();
+
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     try {
@@ -1054,11 +1173,16 @@ function AdminForm({ initial, onClose }: { initial?: Admin; onClose: () => void 
           id: initial.id,
           patch: {
             name,
+<<<<<<< HEAD
             ...(initial.isMaster ? {} : { departmentIds }),
+=======
+            ...(initial.isMaster || departmentId === "" ? {} : { departmentId: Number(departmentId) }),
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
           },
         });
         toast.success(`${initial.code} updated`);
       } else {
+<<<<<<< HEAD
         if (!isMaster && departmentIds.length === 0) return toast.error("Select at least one department");
         await createAdmin.mutateAsync({
           code,
@@ -1067,6 +1191,17 @@ function AdminForm({ initial, onClose }: { initial?: Admin; onClose: () => void 
           departmentIds: isMaster ? undefined : departmentIds,
         });
         toast.success(`${code.toUpperCase()} created — they'll set their own password on first login`);
+=======
+        if (!isMaster && departmentId === "") return toast.error("Select a department");
+        await createAdmin.mutateAsync({
+          code,
+          password,
+          name,
+          isMaster,
+          departmentId: isMaster ? undefined : Number(departmentId),
+        });
+        toast.success(`${code.toUpperCase()} created`);
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
       }
       onClose();
     } catch (err) {
@@ -1100,6 +1235,20 @@ function AdminForm({ initial, onClose }: { initial?: Admin; onClose: () => void 
               className="w-full rounded-xl border bg-background px-3.5 py-2.5 font-mono text-sm uppercase outline-none ring-primary/30 focus:ring-2 disabled:opacity-60"
             />
           </div>
+<<<<<<< HEAD
+=======
+          {!isEdit && (
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Password</label>
+              <input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                className="w-full rounded-xl border bg-background px-3.5 py-2.5 text-sm outline-none ring-primary/30 focus:ring-2"
+              />
+            </div>
+          )}
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
           <div>
             <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Name</label>
             <input
@@ -1122,6 +1271,7 @@ function AdminForm({ initial, onClose }: { initial?: Admin; onClose: () => void 
           )}
           {!isMaster && (
             <div>
+<<<<<<< HEAD
               <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
                 Departments — select one or more
               </label>
@@ -1148,6 +1298,21 @@ function AdminForm({ initial, onClose }: { initial?: Admin; onClose: () => void 
                   Select all departments
                 </button>
               </div>
+=======
+              <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Department</label>
+              <select
+                value={departmentId}
+                onChange={(e) => setDepartmentId(e.target.value ? Number(e.target.value) : "")}
+                className="w-full rounded-xl border bg-background px-3.5 py-2.5 text-sm outline-none ring-primary/30 focus:ring-2"
+              >
+                <option value="">Select a department</option>
+                {departments.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
             </div>
           )}
         </div>
@@ -1251,7 +1416,11 @@ function EmployeeForm({ initial, onClose }: { initial?: Employee; onClose: () =>
         toast.success(`${initial.code} updated`);
       } else {
         await createEmployee.mutateAsync({ code, whatsappNumber, label });
+<<<<<<< HEAD
         toast.success(`${code.toUpperCase()} created — they'll set their own password on first login`);
+=======
+        toast.success(`${code.toUpperCase()} created — password defaults to their WhatsApp number`);
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
       }
       onClose();
     } catch (err) {
@@ -1292,7 +1461,11 @@ function EmployeeForm({ initial, onClose }: { initial?: Employee; onClose: () =>
           </div>
           <div>
             <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+<<<<<<< HEAD
               WhatsApp number
+=======
+              WhatsApp number (this is also their password)
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
             </label>
             <input
               value={whatsappNumber}

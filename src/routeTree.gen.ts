@@ -9,17 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+<<<<<<< HEAD
 import { Route as SetPasswordRouteImport } from './routes/set-password'
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 
+<<<<<<< HEAD
 const SetPasswordRoute = SetPasswordRouteImport.update({
   id: '/set-password',
   path: '/set-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -46,14 +52,20 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+<<<<<<< HEAD
   '/set-password': typeof SetPasswordRoute
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+<<<<<<< HEAD
   '/set-password': typeof SetPasswordRoute
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -61,6 +73,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
+<<<<<<< HEAD
   '/set-password': typeof SetPasswordRoute
 }
 export interface FileRouteTypes {
@@ -69,6 +82,15 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/admin' | '/auth' | '/dashboard' | '/set-password'
   id: '__root__' | '/' | '/admin' | '/auth' | '/dashboard' | '/set-password'
+=======
+}
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/admin' | '/auth' | '/dashboard'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/admin' | '/auth' | '/dashboard'
+  id: '__root__' | '/' | '/admin' | '/auth' | '/dashboard'
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,11 +98,15 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
+<<<<<<< HEAD
   SetPasswordRoute: typeof SetPasswordRoute
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+<<<<<<< HEAD
     '/set-password': {
       id: '/set-password'
       path: '/set-password'
@@ -88,6 +114,8 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -124,7 +152,10 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
+<<<<<<< HEAD
   SetPasswordRoute: SetPasswordRoute,
+=======
+>>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

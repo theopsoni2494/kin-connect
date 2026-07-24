@@ -1,9 +1,5 @@
 import { Router } from "express";
-<<<<<<< HEAD
 import { requireAuth, requirePasswordSet } from "../middleware/requireAuth.js";
-=======
-import { requireAuth } from "../middleware/requireAuth.js";
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 import { upload } from "../middleware/upload.js";
 import { asyncHandler, HttpError } from "../middleware/errorHandler.js";
 import {
@@ -15,11 +11,7 @@ import {
 
 export const attachmentsRouter = Router();
 
-<<<<<<< HEAD
 attachmentsRouter.use(requireAuth, requirePasswordSet);
-=======
-attachmentsRouter.use(requireAuth);
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 
 /**
  * Accepts either:

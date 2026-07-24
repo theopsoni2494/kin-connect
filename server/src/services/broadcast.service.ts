@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import { eq, desc, inArray } from "drizzle-orm";
-=======
-import { eq, desc } from "drizzle-orm";
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 import { db } from "../db/client.js";
 import { broadcasts, broadcastRecipients, tickets, employees, attachments } from "../db/schema.js";
 import { toAttachmentDto, type AttachmentDto } from "./attachment.service.js";
@@ -22,11 +18,7 @@ export interface BroadcastDto {
 async function resolveRecipients(
   targetType: "employee" | "department" | "all",
   targetEmployeeCode: string | undefined,
-<<<<<<< HEAD
   scopedDepartmentIds: number[] | null,
-=======
-  scopedDepartmentId: number | null,
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 ): Promise<string[]> {
   if (targetType === "employee") {
     if (!targetEmployeeCode) throw new HttpError(400, "targetEmployeeCode is required");
@@ -37,7 +29,6 @@ async function resolveRecipients(
   }
 
   if (targetType === "department") {
-<<<<<<< HEAD
     // Not currently exposed in the UI (alerts are always sent per-employee) —
     // kept working for API completeness. With a multi-department admin this
     // targets every one of their assigned departments, not just one.
@@ -46,13 +37,6 @@ async function resolveRecipients(
       .selectDistinct({ employeeCode: tickets.employeeCode })
       .from(tickets)
       .where(inArray(tickets.departmentId, scopedDepartmentIds));
-=======
-    if (scopedDepartmentId === null) throw new HttpError(400, "department target requires a scoped department");
-    const rows = await db
-      .selectDistinct({ employeeCode: tickets.employeeCode })
-      .from(tickets)
-      .where(eq(tickets.departmentId, scopedDepartmentId));
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
     return rows.map((r) => r.employeeCode);
   }
 
@@ -65,19 +49,11 @@ export async function sendBroadcast(
   senderAdminId: string,
   targetType: "employee" | "department" | "all",
   message: string,
-<<<<<<< HEAD
   scopedDepartmentIds: number[] | null,
   targetEmployeeCode?: string,
   attachmentId?: string,
 ) {
   const recipients = await resolveRecipients(targetType, targetEmployeeCode, scopedDepartmentIds);
-=======
-  scopedDepartmentId: number | null,
-  targetEmployeeCode?: string,
-  attachmentId?: string,
-) {
-  const recipients = await resolveRecipients(targetType, targetEmployeeCode, scopedDepartmentId);
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
   if (recipients.length === 0) throw new HttpError(400, "no recipients matched");
 
   const [broadcast] = await db
@@ -86,11 +62,7 @@ export async function sendBroadcast(
       senderAdminId,
       targetType,
       targetEmployeeCode: targetType === "employee" ? recipients[0] : undefined,
-<<<<<<< HEAD
       targetDepartmentId: targetType === "department" ? scopedDepartmentIds?.[0] : undefined,
-=======
-      targetDepartmentId: targetType === "department" ? scopedDepartmentId : undefined,
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
       message,
       attachmentId,
     })

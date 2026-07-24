@@ -1,9 +1,5 @@
 import { Router } from "express";
-<<<<<<< HEAD
 import { requireAuth, requireEmployee, requirePasswordSet, type AuthedRequest } from "../middleware/requireAuth.js";
-=======
-import { requireAuth, requireEmployee, type AuthedRequest } from "../middleware/requireAuth.js";
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 import { asyncHandler, HttpError } from "../middleware/errorHandler.js";
 import { createTicketSchema, addReplySchema } from "../utils/validation.js";
 import {
@@ -22,11 +18,7 @@ import { renderMessage } from "../notifications/templates.js";
 
 export const ticketsRouter = Router();
 
-<<<<<<< HEAD
 ticketsRouter.use(requireAuth, requirePasswordSet, requireEmployee);
-=======
-ticketsRouter.use(requireAuth, requireEmployee);
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 
 ticketsRouter.get(
   "/employees/me/tickets",

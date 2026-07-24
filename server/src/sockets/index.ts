@@ -34,17 +34,11 @@ export function initSockets(httpServer: HttpServer): SocketIoServer {
         db.select({ id: departments.id })
           .from(departments)
           .then((rows) => rows.forEach((d) => socket.join(`admin:department:${d.id}`)))
-<<<<<<< HEAD
           .catch((err) => console.error("failed to join admin rooms", err));
       } else if (claims.departmentIds) {
         // Non-master admin, one or more assigned departments (baked into the
         // token at login) — join a room per department, no DB query needed.
         claims.departmentIds.forEach((id) => socket.join(`admin:department:${id}`));
-=======
-          .catch((err) => console.error("failed to join master admin rooms", err));
-      } else if (claims.departmentId) {
-        socket.join(`admin:department:${claims.departmentId}`);
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
       }
     }
   });

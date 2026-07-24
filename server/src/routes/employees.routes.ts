@@ -1,5 +1,4 @@
 import { Router } from "express";
-<<<<<<< HEAD
 import { requireAuth, requirePasswordSet } from "../middleware/requireAuth.js";
 import { requireAdminDepartment } from "../middleware/requireAdminDepartment.js";
 import { asyncHandler, HttpError } from "../middleware/errorHandler.js";
@@ -11,17 +10,6 @@ import { extractEmployeeCodes } from "../utils/spreadsheet.js";
 export const employeesRouter = Router();
 
 employeesRouter.use(requireAuth, requirePasswordSet, requireAdminDepartment);
-=======
-import { requireAuth } from "../middleware/requireAuth.js";
-import { requireAdminDepartment } from "../middleware/requireAdminDepartment.js";
-import { asyncHandler } from "../middleware/errorHandler.js";
-import { createEmployeeSchema, updateEmployeeSchema } from "../utils/validation.js";
-import { listEmployees, createEmployee, updateEmployee, deleteEmployee } from "../services/employee.service.js";
-
-export const employeesRouter = Router();
-
-employeesRouter.use(requireAuth, requireAdminDepartment);
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 
 employeesRouter.get(
   "/",
@@ -40,7 +28,6 @@ employeesRouter.post(
   }),
 );
 
-<<<<<<< HEAD
 employeesRouter.post(
   "/bulk-import",
   upload.single("file"),
@@ -55,8 +42,6 @@ employeesRouter.post(
   }),
 );
 
-=======
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 employeesRouter.patch(
   "/:code",
   asyncHandler(async (req, res) => {

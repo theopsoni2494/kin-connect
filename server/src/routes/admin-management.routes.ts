@@ -1,9 +1,5 @@
 import { Router } from "express";
-<<<<<<< HEAD
 import { requireAuth, requirePasswordSet } from "../middleware/requireAuth.js";
-=======
-import { requireAuth } from "../middleware/requireAuth.js";
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 import { requireMasterAdmin } from "../middleware/requireAdminDepartment.js";
 import { asyncHandler, HttpError } from "../middleware/errorHandler.js";
 import { createAdminSchema, updateAdminSchema, resetAdminPasswordSchema } from "../utils/validation.js";
@@ -12,11 +8,7 @@ import type { AuthedRequest } from "../middleware/requireAuth.js";
 
 export const adminManagementRouter = Router();
 
-<<<<<<< HEAD
 adminManagementRouter.use(requireAuth, requirePasswordSet, requireMasterAdmin);
-=======
-adminManagementRouter.use(requireAuth, requireMasterAdmin);
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 
 adminManagementRouter.get(
   "/",

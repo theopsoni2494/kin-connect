@@ -81,10 +81,7 @@ function Dashboard() {
 
   useEffect(() => {
     if (!session) navigate({ to: "/auth" });
-<<<<<<< HEAD
     if (session?.mustSetPassword) navigate({ to: "/set-password" });
-=======
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
     if (session?.role === "admin") navigate({ to: "/admin" });
   }, [session, navigate]);
 
@@ -108,11 +105,7 @@ function Dashboard() {
   }
 
   return (
-<<<<<<< HEAD
     <div className="relative flex h-screen flex-col overflow-hidden md:flex-row">
-=======
-    <div className="relative flex min-h-screen flex-col overflow-hidden md:flex-row">
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
       {/* Store-photo colour wash (same photo/tone as the login page) plus soft glow accents */}
       <div
         className="pointer-events-none fixed inset-0 bg-cover bg-center opacity-[0.14]"
@@ -157,12 +150,8 @@ function Dashboard() {
       />
 
       <main className="flex-1 overflow-y-auto">
-<<<<<<< HEAD
         <div className="flex min-h-full flex-col">
         <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
-=======
-        <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-10">
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
           {view === "home" && !department && (
             <HomeGrid
               employeeCode={employeeCode}
@@ -194,10 +183,7 @@ function Dashboard() {
           {view === "notifications" && <EmployeeNotificationsView />}
         </div>
         <p className="pb-6 text-center text-xs text-muted-foreground">© 2026 Made by Yash Soni</p>
-<<<<<<< HEAD
         </div>
-=======
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
       </main>
 
       {profileOpen && session && (
@@ -830,7 +816,6 @@ function ProfilePanel({ identifier, onClose }: { identifier: string; onClose: ()
             value={officeMail}
             onChange={(e) => setOfficeMail(e.target.value)}
             placeholder="you@company.com"
-<<<<<<< HEAD
             disabled={!!profile?.officeMail}
             className="w-full rounded-xl border bg-background px-3.5 py-2.5 text-sm outline-none ring-primary/30 focus:ring-2 disabled:opacity-60"
           />
@@ -839,10 +824,6 @@ function ProfilePanel({ identifier, onClose }: { identifier: string; onClose: ()
               Locked after first entry — contact the master admin to change it.
             </p>
           )}
-=======
-            className="w-full rounded-xl border bg-background px-3.5 py-2.5 text-sm outline-none ring-primary/30 focus:ring-2"
-          />
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
         </Field>
         <Field label="Password">
           <ChangePasswordSection />

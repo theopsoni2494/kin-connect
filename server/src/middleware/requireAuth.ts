@@ -3,11 +3,7 @@ import { verifyAccessToken, type AccessTokenClaims } from "../services/auth.serv
 
 export interface AuthedRequest extends Request {
   auth?: AccessTokenClaims;
-<<<<<<< HEAD
   scopedDepartmentIds?: number[] | null;
-=======
-  scopedDepartmentId?: number | null;
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 }
 
 export function requireAuth(req: AuthedRequest, res: Response, next: NextFunction) {
@@ -28,7 +24,6 @@ export function requireEmployee(req: AuthedRequest, res: Response, next: NextFun
   if (req.auth?.role !== "employee") return res.status(403).json({ error: "employee only" });
   next();
 }
-<<<<<<< HEAD
 
 /**
  * Blocks every route except /auth/set-initial-password (which doesn't use
@@ -41,5 +36,3 @@ export function requirePasswordSet(req: AuthedRequest, res: Response, next: Next
   }
   next();
 }
-=======
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e

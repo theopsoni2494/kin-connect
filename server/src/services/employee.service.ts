@@ -1,5 +1,4 @@
 import bcrypt from "bcryptjs";
-<<<<<<< HEAD
 import { eq, inArray } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { employees, admins } from "../db/schema.js";
@@ -65,13 +64,6 @@ export async function bulkCreateEmployees(rawCodes: string[]): Promise<BulkImpor
   };
 }
 
-=======
-import { eq } from "drizzle-orm";
-import { db } from "../db/client.js";
-import { employees } from "../db/schema.js";
-import { HttpError } from "../middleware/errorHandler.js";
-
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 export async function listEmployees() {
   return db.select().from(employees).orderBy(employees.code);
 }
@@ -80,7 +72,6 @@ export async function createEmployee(code: string, whatsappNumber: string, label
   const normalizedCode = code.trim().toUpperCase();
   const existing = await db.query.employees.findFirst({ where: eq(employees.code, normalizedCode) });
   if (existing) throw new HttpError(409, "employee code already exists");
-<<<<<<< HEAD
   if (await isCodeTakenByAdmin(normalizedCode)) {
     throw new HttpError(409, "this code is already registered as an admin account — delete it there first");
   }
@@ -90,14 +81,6 @@ export async function createEmployee(code: string, whatsappNumber: string, label
   const [row] = await db
     .insert(employees)
     .values({ code: normalizedCode, passwordHash: null, whatsappNumber: whatsappNumber.trim(), label })
-=======
-
-  // Password defaults to the employee's WhatsApp number, per requirement.
-  const passwordHash = await bcrypt.hash(whatsappNumber.trim(), 10);
-  const [row] = await db
-    .insert(employees)
-    .values({ code: normalizedCode, passwordHash, whatsappNumber: whatsappNumber.trim(), label })
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
     .returning();
   return row;
 }

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import { eq, and, desc, isNull, isNotNull, inArray } from "drizzle-orm";
-=======
-import { eq, and, desc, isNull, isNotNull } from "drizzle-orm";
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 import { db } from "../db/client.js";
 import { tickets, replies, departments, attachments } from "../db/schema.js";
 import { genTicketId } from "../utils/ids.js";
@@ -109,15 +105,9 @@ export async function listTicketsForEmployee(employeeCode: string, status?: Tick
   return Promise.all(rows.map(toTicketDto));
 }
 
-<<<<<<< HEAD
 export async function listTicketsForAdmin(scopedDepartmentIds: number[] | null, status?: TicketStatus) {
   const conditions = [] as any[];
   if (scopedDepartmentIds !== null) conditions.push(inArray(tickets.departmentId, scopedDepartmentIds));
-=======
-export async function listTicketsForAdmin(scopedDepartmentId: number | null, status?: TicketStatus) {
-  const conditions = [] as any[];
-  if (scopedDepartmentId !== null) conditions.push(eq(tickets.departmentId, scopedDepartmentId));
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
   if (status) conditions.push(eq(tickets.status, status));
   const rows = await db.query.tickets.findMany({
     where: conditions.length ? and(...conditions) : undefined,
@@ -126,17 +116,10 @@ export async function listTicketsForAdmin(scopedDepartmentId: number | null, sta
   return Promise.all(rows.map(toTicketDto));
 }
 
-<<<<<<< HEAD
 export async function getTicketScoped(ticketId: string, scopedDepartmentIds: number[] | null) {
   const ticket = await db.query.tickets.findFirst({ where: eq(tickets.id, ticketId) });
   if (!ticket) throw new HttpError(404, "ticket not found");
   if (scopedDepartmentIds !== null && !scopedDepartmentIds.includes(ticket.departmentId)) {
-=======
-export async function getTicketScoped(ticketId: string, scopedDepartmentId: number | null) {
-  const ticket = await db.query.tickets.findFirst({ where: eq(tickets.id, ticketId) });
-  if (!ticket) throw new HttpError(404, "ticket not found");
-  if (scopedDepartmentId !== null && ticket.departmentId !== scopedDepartmentId) {
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
     throw new HttpError(404, "ticket not found");
   }
   return toTicketDto(ticket);

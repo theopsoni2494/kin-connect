@@ -152,7 +152,6 @@ export function useDeleteEmployee() {
   });
 }
 
-<<<<<<< HEAD
 export interface BulkImportResult {
   created: string[];
   skippedExisting: string[];
@@ -171,8 +170,6 @@ export function useBulkImportEmployees() {
   });
 }
 
-=======
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 // --- Admins (master-admin only) ---
 export function useAdmins() {
   return useQuery({ queryKey: ["admins"], queryFn: () => apiGet<Admin[]>("/admin/admins") });
@@ -181,11 +178,7 @@ export function useAdmins() {
 export function useCreateAdmin() {
   const qc = useQueryClient();
   return useMutation({
-<<<<<<< HEAD
     mutationFn: (input: { code: string; name: string; isMaster: boolean; departmentIds?: number[] }) =>
-=======
-    mutationFn: (input: { code: string; password: string; name: string; isMaster: boolean; departmentId?: number }) =>
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
       apiPost<Admin>("/admin/admins", input),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admins"] }),
   });
@@ -194,11 +187,7 @@ export function useCreateAdmin() {
 export function useUpdateAdmin() {
   const qc = useQueryClient();
   return useMutation({
-<<<<<<< HEAD
     mutationFn: (input: { id: string; patch: { name?: string; isActive?: boolean; departmentIds?: number[] } }) =>
-=======
-    mutationFn: (input: { id: string; patch: { name?: string; isActive?: boolean; departmentId?: number } }) =>
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
       apiPatch<Admin>(`/admin/admins/${input.id}`, input.patch),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admins"] }),
   });
@@ -270,7 +259,6 @@ export function useChangePassword() {
   });
 }
 
-<<<<<<< HEAD
 // First-login-only: claims a passwordless account by setting its real password.
 export function useSetInitialPassword() {
   return useMutation({
@@ -278,8 +266,6 @@ export function useSetInitialPassword() {
   });
 }
 
-=======
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 // --- Export (Download Data) ---
 export async function downloadTicketsCsv(from: Date, to: Date) {
   const params = new URLSearchParams({ from: from.toISOString(), to: to.toISOString() });

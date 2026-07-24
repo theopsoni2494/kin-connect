@@ -24,14 +24,10 @@ export const departments = pgTable("departments", {
 export const employees = pgTable("employees", {
   id: uuid("id").primaryKey().defaultRandom(),
   code: text("code").notNull().unique(),
-<<<<<<< HEAD
   // Nullable = account not yet claimed: first login skips the password check
   // entirely, then the client is forced through /auth/set-initial-password
   // before anything else works (see requirePasswordSet middleware).
   passwordHash: text("password_hash"),
-=======
-  passwordHash: text("password_hash").notNull(),
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
   label: text("label"),
   whatsappNumber: text("whatsapp_number"),
   isActive: boolean("is_active").notNull().default(true),
@@ -43,12 +39,8 @@ export const admins = pgTable("admins", {
   id: uuid("id").primaryKey().defaultRandom(),
   code: text("code").unique(),
   email: text("email").unique(),
-<<<<<<< HEAD
   // Nullable = account not yet claimed — same passwordless-first-login model as employees.
   passwordHash: text("password_hash"),
-=======
-  passwordHash: text("password_hash").notNull(),
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
   name: text("name").notNull().default("Admin"),
   isMaster: boolean("is_master").notNull().default(false),
   whatsappNumber: text("whatsapp_number"),

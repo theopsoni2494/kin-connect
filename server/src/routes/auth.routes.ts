@@ -8,10 +8,7 @@ import {
   refreshSchema,
   resetEmployeePasswordSchema,
   changePasswordSchema,
-<<<<<<< HEAD
   setInitialPasswordSchema,
-=======
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 } from "../utils/validation.js";
 import {
   loginEmployee,
@@ -20,10 +17,7 @@ import {
   revokeRefreshToken,
   resetEmployeePassword,
   changeOwnPassword,
-<<<<<<< HEAD
   setInitialPassword,
-=======
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
 } from "../services/auth.service.js";
 
 export const authRouter = Router();
@@ -38,10 +32,7 @@ authRouter.post(
       accessToken: result.accessToken,
       refreshToken: result.refreshToken,
       employee: { code: result.employee.code, label: result.employee.label },
-<<<<<<< HEAD
       mustSetPassword: result.mustSetPassword,
-=======
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
     });
   }),
 );
@@ -65,12 +56,8 @@ authRouter.post(
         name: result.admin.name,
         isMaster: result.admin.isMaster,
       },
-<<<<<<< HEAD
       departments: result.departments,
       mustSetPassword: result.mustSetPassword,
-=======
-      department: result.department,
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e
     });
   }),
 );
@@ -115,7 +102,6 @@ authRouter.post(
     res.status(204).end();
   }),
 );
-<<<<<<< HEAD
 
 // First-login-only: claims a passwordless account. Deliberately NOT gated by
 // requirePasswordSet (this IS the escape hatch it blocks everything else
@@ -130,5 +116,3 @@ authRouter.post(
     res.status(204).end();
   }),
 );
-=======
->>>>>>> c115baa1c5dfb114d21ff384e0c1ee230498883e

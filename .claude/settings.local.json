@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm -v)",
+      "Bash(npm install *)",
+      "Bash(DATABASE_URL=\"postgresql://placeholder\" npx drizzle-kit generate)",
+      "Bash(npx tsc *)",
+      "Bash(cp .env.example .env)",
+      "Bash(sed -i 's/^DATABASE_URL=.*/DATABASE_URL=postgresql:\\\\/\\\\/user:pass@localhost:5432\\\\/nonexistent/' .env)",
+      "Bash(timeout 5 npx tsx src/index.ts)",
+      "Bash(node -e \"console.log\\('node ok'\\)\")",
+      "Bash(node -e \"console.log\\(require\\('crypto'\\).randomBytes\\(32\\).toString\\('hex'\\)\\)\")",
+      "Bash(npm run *)",
+      "Bash(powershell -Command \"\\(Get-CimInstance Win32_Process -Filter \\\\\"ProcessId = 19328\\\\\"\\).CommandLine\")",
+      "Bash(powershell -Command \"Stop-Process -Id 19328 -Force\")",
+      "Bash(curl -s -X POST http://localhost:4000/v1/auth/employee/login -H \"Content-Type: application/json\" -d '{\"employeeCode\":\"STR-1042\",\"password\":\"+919800001042\"}' -w \"\\\\nHTTP_STATUS:%{http_code}\\\\n\")",
+      "Bash(curl -s -X POST http://localhost:4000/v1/auth/employee/login -H \"Content-Type: application/json\" -d '{\"code\":\"STR-1042\",\"password\":\"+919800001042\"}' -w \"\\\\nHTTP_STATUS:%{http_code}\\\\n\")"
+    ]
+  }
+}

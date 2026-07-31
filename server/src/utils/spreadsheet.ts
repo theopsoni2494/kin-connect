@@ -1,12 +1,58 @@
 import * as XLSX from "xlsx";
 
-const HEADER_VARIANTS = ["emp code", "employee code", "code", "emp id", "employee id", "employee code (id)"];
+const CODE_HEADER_VARIANTS = ["emp code", "employee code", "code", "emp id", "employee id", "employee code (id)"];
 
-// Reads the first sheet of an uploaded .xlsx/.xls/.csv file and pulls out a
-// flat list of employee codes. Looks for a header cell matching a known
-// variant (case-insensitive) and reads everything below it in that column;
-// falls back to "column A, skip row 1" if no recognizable header is found.
-export function extractEmployeeCodes(buffer: Buffer): string[] {
+export interface ParsedEmployeeRow {
+  code: string;
+  name?: string;
+  sector?: string;
+}
+
+function normalize(cell: unknown): string {
+  return String(cell ?? "").trim().toLowerCase();
+}
+
+function findExactColumn(
+  rows: unknown[][],
+  variants: string[],
+): { headerRow: number; col: number } | null {
+  for (let r = 0; r < Math.min(rows.length, 10); r++) {
+    const row = rows[r] ?? [];
+    for (let c = 0; c < row.length; c++) {
+      if (variants.includes(normalize(row[c]))) return { headerRow: r, col: c };
+    }
+  }
+  return null;
+}
+
+// Substring match — deliberately more lenient than the code column's
+// exact-list match, since real spreadsheets use all sorts of phrasing for
+// these two ("Dept.", "Dept Name", "Sector", "Emp Name", "Full Name", ...).
+// `exclude` keeps a header containing multiple keywords from being claimed
+// twice — sector/department is resolved before name, so name's search skips
+// whatever column that already took.
+function findFuzzyColumn(
+  rows: unknown[][],
+  mustIncludeAny: string[],
+  exclude: Set<number>,
+): { headerRow: number; col: number } | null {
+  for (let r = 0; r < Math.min(rows.length, 10); r++) {
+    const row = rows[r] ?? [];
+    for (let c = 0; c < row.length; c++) {
+      if (exclude.has(c)) continue;
+      const cell = normalize(row[c]);
+      if (mustIncludeAny.some((needle) => cell.includes(needle))) return { headerRow: r, col: c };
+    }
+  }
+  return null;
+}
+
+// Reads the first sheet of an uploaded .xlsx/.xls/.csv file and pulls out
+// employee code (required), name, and sector (both optional). Column order
+// and extra columns (e.g. "Sr. No.") don't matter. Falls back to "column A,
+// skip row 1" for the code if no recognizable header is found; name/sector
+// are left undefined in that fallback case.
+export function extractEmployeeRows(buffer: Buffer): ParsedEmployeeRow[] {
   const workbook = XLSX.read(buffer, { type: "buffer" });
   const sheetName = workbook.SheetNames[0];
   if (!sheetName) return [];
@@ -14,31 +60,26 @@ export function extractEmployeeCodes(buffer: Buffer): string[] {
   const rows: unknown[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "", blankrows: false });
   if (rows.length === 0) return [];
 
-  let headerRow = -1;
-  let col = -1;
-  for (let r = 0; r < Math.min(rows.length, 10) && col === -1; r++) {
-    const row = rows[r] ?? [];
-    for (let c = 0; c < row.length; c++) {
-      const cell = String(row[c] ?? "").trim().toLowerCase();
-      if (HEADER_VARIANTS.includes(cell)) {
-        headerRow = r;
-        col = c;
-        break;
-      }
-    }
-  }
+  const codeMatch = findExactColumn(rows, CODE_HEADER_VARIANTS);
+  const claimed = new Set<number>();
+  if (codeMatch) claimed.add(codeMatch.col);
 
-  if (col === -1) {
-    // No recognizable header — assume row 0 is a header row and column 0 holds the codes.
-    headerRow = 0;
-    col = 0;
-  }
+  const sectorMatch = findFuzzyColumn(rows, ["sector", "dept"], claimed);
+  if (sectorMatch) claimed.add(sectorMatch.col);
 
-  const codes: string[] = [];
+  const nameMatch = findFuzzyColumn(rows, ["name"], claimed);
+
+  const headerRow = codeMatch?.headerRow ?? 0;
+  const codeCol = codeMatch?.col ?? 0;
+
+  const result: ParsedEmployeeRow[] = [];
   for (let r = headerRow + 1; r < rows.length; r++) {
-    const value = rows[r]?.[col];
-    const str = String(value ?? "").trim();
-    if (str) codes.push(str);
+    const row = rows[r] ?? [];
+    const code = String(row[codeCol] ?? "").trim();
+    if (!code) continue;
+    const name = nameMatch ? String(row[nameMatch.col] ?? "").trim() : "";
+    const sector = sectorMatch ? String(row[sectorMatch.col] ?? "").trim() : "";
+    result.push({ code, name: name || undefined, sector: sector || undefined });
   }
-  return codes;
+  return result;
 }

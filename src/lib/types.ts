@@ -55,6 +55,7 @@ export interface Employee {
   label?: string | null;
   whatsappNumber?: string | null;
   isActive?: boolean;
+  sector?: string | null;
 }
 
 export interface Admin {

@@ -77,7 +77,7 @@ function AuthPage() {
               Admin - Unified Solutions
             </p>
           </div>
-          <p className="text-xs text-white/70">© 2026 Made by Yash Soni</p>
+          <p className="text-xs text-white/70">© 2026 Powered by Yash Soni</p>
         </div>
 
         {/* Glass login card */}

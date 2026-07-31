@@ -43,12 +43,14 @@ export const createEmployeeSchema = z.object({
   code: z.string().trim().min(1),
   whatsappNumber: z.string().trim().min(6),
   label: z.string().trim().optional(),
+  sector: z.string().trim().nullable().optional(),
 });
 
 export const updateEmployeeSchema = z.object({
   label: z.string().trim().optional(),
   whatsappNumber: z.string().trim().optional(),
   isActive: z.boolean().optional(),
+  sector: z.string().trim().nullable().optional(),
 });
 
 export const sendBroadcastSchema = z.object({

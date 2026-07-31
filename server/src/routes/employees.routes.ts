@@ -5,7 +5,7 @@ import { asyncHandler, HttpError } from "../middleware/errorHandler.js";
 import { upload } from "../middleware/upload.js";
 import { createEmployeeSchema, updateEmployeeSchema } from "../utils/validation.js";
 import { listEmployees, createEmployee, updateEmployee, deleteEmployee, bulkCreateEmployees } from "../services/employee.service.js";
-import { extractEmployeeCodes } from "../utils/spreadsheet.js";
+import { extractEmployeeRows } from "../utils/spreadsheet.js";
 
 export const employeesRouter = Router();
 
@@ -15,16 +15,24 @@ employeesRouter.get(
   "/",
   asyncHandler(async (_req, res) => {
     const rows = await listEmployees();
-    res.json(rows.map((e) => ({ code: e.code, label: e.label, whatsappNumber: e.whatsappNumber, isActive: e.isActive })));
+    res.json(
+      rows.map((e) => ({
+        code: e.code,
+        label: e.label,
+        whatsappNumber: e.whatsappNumber,
+        isActive: e.isActive,
+        sector: e.sector,
+      })),
+    );
   }),
 );
 
 employeesRouter.post(
   "/",
   asyncHandler(async (req, res) => {
-    const { code, whatsappNumber, label } = createEmployeeSchema.parse(req.body);
-    const row = await createEmployee(code, whatsappNumber, label);
-    res.status(201).json({ code: row.code, label: row.label, whatsappNumber: row.whatsappNumber });
+    const { code, whatsappNumber, label, sector } = createEmployeeSchema.parse(req.body);
+    const row = await createEmployee(code, whatsappNumber, label, sector);
+    res.status(201).json({ code: row.code, label: row.label, whatsappNumber: row.whatsappNumber, sector: row.sector });
   }),
 );
 
@@ -33,11 +41,11 @@ employeesRouter.post(
   upload.single("file"),
   asyncHandler(async (req, res) => {
     if (!req.file) throw new HttpError(400, "file is required");
-    const codes = extractEmployeeCodes(req.file.buffer);
-    if (codes.length === 0) {
+    const rows = extractEmployeeRows(req.file.buffer);
+    if (rows.length === 0) {
       throw new HttpError(400, "no employee codes found in the file — check the column header (e.g. \"EMP CODE\")");
     }
-    const result = await bulkCreateEmployees(codes);
+    const result = await bulkCreateEmployees(rows);
     res.json(result);
   }),
 );
@@ -47,7 +55,13 @@ employeesRouter.patch(
   asyncHandler(async (req, res) => {
     const patch = updateEmployeeSchema.parse(req.body);
     const row = await updateEmployee(req.params.code, patch);
-    res.json({ code: row.code, label: row.label, whatsappNumber: row.whatsappNumber, isActive: row.isActive });
+    res.json({
+      code: row.code,
+      label: row.label,
+      whatsappNumber: row.whatsappNumber,
+      isActive: row.isActive,
+      sector: row.sector,
+    });
   }),
 );
 

@@ -3,6 +3,7 @@ import { eq, inArray } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { employees, admins } from "../db/schema.js";
 import { HttpError } from "../middleware/errorHandler.js";
+import type { ParsedEmployeeRow } from "../utils/spreadsheet.js";
 
 // Default password for spreadsheet-imported employees — a known, literal
 // value (not the passwordless-first-login flow used by single creation)
@@ -15,6 +16,7 @@ export interface BulkImportResult {
   created: string[];
   skippedExisting: string[];
   skippedInvalid: string[];
+  updatedExisting: string[];
 }
 
 // Codes are a single shared namespace across employees and admins — the
@@ -25,42 +27,70 @@ export async function isCodeTakenByAdmin(code: string): Promise<boolean> {
   return !!existing;
 }
 
-export async function bulkCreateEmployees(rawCodes: string[]): Promise<BulkImportResult> {
+export async function bulkCreateEmployees(rawRows: ParsedEmployeeRow[]): Promise<BulkImportResult> {
   const seen = new Set<string>();
   const skippedInvalid: string[] = [];
-  const candidates: string[] = [];
-  for (const raw of rawCodes) {
-    const code = String(raw ?? "").trim().toUpperCase();
+  const candidates: { code: string; label?: string; sector?: string }[] = [];
+  for (const raw of rawRows) {
+    const code = String(raw.code ?? "").trim().toUpperCase();
     if (!code) continue;
     if (code.length > 64 || !/^[A-Z0-9_.-]+$/.test(code)) {
-      skippedInvalid.push(String(raw));
+      skippedInvalid.push(String(raw.code));
       continue;
     }
     if (seen.has(code)) continue;
     seen.add(code);
-    candidates.push(code);
+    candidates.push({ code, label: raw.name, sector: raw.sector });
   }
-  if (candidates.length === 0) return { created: [], skippedExisting: [], skippedInvalid };
+  if (candidates.length === 0) {
+    return { created: [], skippedExisting: [], skippedInvalid, updatedExisting: [] };
+  }
 
+  const codes = candidates.map((c) => c.code);
   const [existingEmployeeRows, existingAdminRows] = await Promise.all([
-    db.query.employees.findMany({ where: inArray(employees.code, candidates) }),
-    db.query.admins.findMany({ where: inArray(admins.code, candidates) }),
+    db.query.employees.findMany({ where: inArray(employees.code, codes) }),
+    db.query.admins.findMany({ where: inArray(admins.code, codes) }),
   ]);
+  const existingEmployeeByCode = new Map(existingEmployeeRows.map((e) => [e.code, e]));
   const existingCodes = new Set([
     ...existingEmployeeRows.map((e) => e.code),
     ...existingAdminRows.map((a) => a.code).filter((c): c is string => c !== null),
   ]);
-  const toCreate = candidates.filter((c) => !existingCodes.has(c));
+  const toCreate = candidates.filter((c) => !existingCodes.has(c.code));
 
   if (toCreate.length > 0) {
     const passwordHash = await bcrypt.hash(BULK_IMPORT_DEFAULT_PASSWORD, 10);
-    await db.insert(employees).values(toCreate.map((code) => ({ code, passwordHash })));
+    await db.insert(employees).values(
+      toCreate.map((c) => ({
+        code: c.code,
+        passwordHash,
+        label: c.label,
+        sector: c.sector,
+      })),
+    );
+  }
+
+  // Re-importing the same sheet after a first pass that didn't detect a
+  // column shouldn't require a full wipe — backfill any missing label/sector
+  // for already-existing employees, but never overwrite a value that's already set.
+  const updatedExisting: string[] = [];
+  for (const c of candidates) {
+    const existing = existingEmployeeByCode.get(c.code);
+    if (!existing) continue;
+    const patch: { label?: string; sector?: string } = {};
+    if (c.label && !existing.label) patch.label = c.label;
+    if (c.sector && !existing.sector) patch.sector = c.sector;
+    if (Object.keys(patch).length > 0) {
+      await db.update(employees).set({ ...patch, updatedAt: new Date() }).where(eq(employees.code, c.code));
+      updatedExisting.push(c.code);
+    }
   }
 
   return {
-    created: toCreate,
-    skippedExisting: candidates.filter((c) => existingCodes.has(c)),
+    created: toCreate.map((c) => c.code),
+    skippedExisting: codes.filter((c) => existingCodes.has(c)),
     skippedInvalid,
+    updatedExisting,
   };
 }
 
@@ -68,7 +98,12 @@ export async function listEmployees() {
   return db.select().from(employees).orderBy(employees.code);
 }
 
-export async function createEmployee(code: string, whatsappNumber: string, label?: string) {
+export async function createEmployee(
+  code: string,
+  whatsappNumber: string,
+  label?: string,
+  sector?: string | null,
+) {
   const normalizedCode = code.trim().toUpperCase();
   const existing = await db.query.employees.findFirst({ where: eq(employees.code, normalizedCode) });
   if (existing) throw new HttpError(409, "employee code already exists");
@@ -80,14 +115,14 @@ export async function createEmployee(code: string, whatsappNumber: string, label
   // whatsappNumber is contact info only, not a credential.
   const [row] = await db
     .insert(employees)
-    .values({ code: normalizedCode, passwordHash: null, whatsappNumber: whatsappNumber.trim(), label })
+    .values({ code: normalizedCode, passwordHash: null, whatsappNumber: whatsappNumber.trim(), label, sector })
     .returning();
   return row;
 }
 
 export async function updateEmployee(
   code: string,
-  patch: { label?: string; whatsappNumber?: string; isActive?: boolean },
+  patch: { label?: string; whatsappNumber?: string; isActive?: boolean; sector?: string | null },
 ) {
   const normalizedCode = code.trim().toUpperCase();
   const existing = await db.query.employees.findFirst({ where: eq(employees.code, normalizedCode) });

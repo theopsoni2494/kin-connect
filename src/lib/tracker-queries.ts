@@ -129,7 +129,7 @@ export function useEmployees() {
 export function useCreateEmployee() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: { code: string; whatsappNumber: string; label?: string }) =>
+    mutationFn: (input: { code: string; whatsappNumber: string; label?: string; sector?: string | null }) =>
       apiPost<Employee>("/admin/employees", input),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["employees"] }),
   });
@@ -156,6 +156,7 @@ export interface BulkImportResult {
   created: string[];
   skippedExisting: string[];
   skippedInvalid: string[];
+  updatedExisting: string[];
 }
 
 export function useBulkImportEmployees() {

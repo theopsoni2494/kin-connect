@@ -182,7 +182,7 @@ function Dashboard() {
           {view === "alerts" && <AlertsView />}
           {view === "notifications" && <EmployeeNotificationsView />}
         </div>
-        <p className="pb-6 text-center text-xs text-muted-foreground">© 2026 Made by Yash Soni</p>
+        <p className="pb-6 text-center text-xs text-muted-foreground">© 2026 Powered by Yash Soni</p>
         </div>
       </main>
 

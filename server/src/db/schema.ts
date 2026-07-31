@@ -30,6 +30,12 @@ export const employees = pgTable("employees", {
   passwordHash: text("password_hash"),
   label: text("label"),
   whatsappNumber: text("whatsapp_number"),
+  // The employee's organizational sector (e.g. "PRODUCTION", "HUMAN RESOURCE",
+  // "FINANCE AND ACCOUNTS") — informational profile field only, free text
+  // sourced from HR's spreadsheet. Unrelated to the 7 fixed ticket-routing
+  // departments (tickets.departmentId) — a "sector" is an org unit an
+  // employee belongs to, not a department that handles their tickets.
+  sector: text("sector"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

@@ -279,7 +279,7 @@ function AdminPage() {
             </>
           )}
         </div>
-        <p className="pb-6 text-center text-xs text-muted-foreground">© 2026 Made by Yash Soni</p>
+        <p className="pb-6 text-center text-xs text-muted-foreground">© 2026 Powered by Yash Soni</p>
         </div>
       </main>
 
@@ -635,10 +635,13 @@ function CredentialsView() {
     try {
       const result = await bulkImport.mutateAsync(file);
       setImportResult(result);
-      if (result.created.length > 0) {
-        toast.success(`Imported ${result.created.length} new employee${result.created.length === 1 ? "" : "s"}`);
+      if (result.created.length > 0 || result.updatedExisting.length > 0) {
+        const parts = [];
+        if (result.created.length > 0) parts.push(`${result.created.length} new employee${result.created.length === 1 ? "" : "s"} created`);
+        if (result.updatedExisting.length > 0) parts.push(`${result.updatedExisting.length} existing employee${result.updatedExisting.length === 1 ? "" : "s"} backfilled`);
+        toast.success(parts.join(", "));
       } else {
-        toast.error("No new employees were created — see details below");
+        toast.error("Nothing changed — see details below");
       }
     } catch (err) {
       toast.error((err as Error).message);
@@ -713,11 +716,20 @@ function CredentialsView() {
           <p className="mt-1 text-success" style={{ color: "oklch(0.45 0.13 160)" }}>
             {importResult.created.length} created
           </p>
-          {importResult.skippedExisting.length > 0 && (
-            <p className="mt-1 text-muted-foreground">
-              {importResult.skippedExisting.length} already existed, skipped: {importResult.skippedExisting.join(", ")}
+          {importResult.updatedExisting.length > 0 && (
+            <p className="mt-1 text-success" style={{ color: "oklch(0.45 0.13 160)" }}>
+              {importResult.updatedExisting.length} existing employee{importResult.updatedExisting.length === 1 ? "" : "s"} backfilled (name/sector was missing): {importResult.updatedExisting.join(", ")}
             </p>
           )}
+          {(() => {
+            const updatedSet = new Set(importResult.updatedExisting);
+            const unchanged = importResult.skippedExisting.filter((c) => !updatedSet.has(c));
+            return unchanged.length > 0 ? (
+              <p className="mt-1 text-muted-foreground">
+                {unchanged.length} already existed, no changes needed: {unchanged.join(", ")}
+              </p>
+            ) : null;
+          })()}
           {importResult.skippedInvalid.length > 0 && (
             <p className="mt-1 text-destructive">
               {importResult.skippedInvalid.length} had an unusable code, skipped: {importResult.skippedInvalid.join(", ")}
@@ -754,8 +766,8 @@ function CredentialsView() {
             <thead className="border-b bg-muted/40 text-xs uppercase tracking-wider text-muted-foreground">
               <tr>
                 <th className="px-5 py-3 text-left font-medium">Employee Code</th>
-                <th className="px-5 py-3 text-left font-medium">WhatsApp (Password)</th>
-                <th className="px-5 py-3 text-left font-medium">Label</th>
+                <th className="px-5 py-3 text-left font-medium">Name</th>
+                <th className="px-5 py-3 text-left font-medium">Sector</th>
                 <th className="px-5 py-3 text-left font-medium">Status</th>
                 <th className="px-5 py-3 text-right font-medium">Actions</th>
               </tr>
@@ -766,8 +778,8 @@ function CredentialsView() {
                 return (
                   <tr key={e.code} className="border-b last:border-0 transition hover:bg-muted/30">
                     <td className="px-5 py-3 font-mono font-medium">{e.code}</td>
-                    <td className="px-5 py-3 font-mono text-muted-foreground">{e.whatsappNumber ?? "—"}</td>
                     <td className="px-5 py-3 text-muted-foreground">{e.label ?? "—"}</td>
+                    <td className="px-5 py-3 text-muted-foreground">{e.sector ?? "—"}</td>
                     <td className="px-5 py-3">
                       <span
                         className={cn(
@@ -1232,6 +1244,7 @@ function EmployeeForm({ initial, onClose }: { initial?: Employee; onClose: () =>
   const [code, setCode] = useState(initial?.code ?? "");
   const [whatsappNumber, setWhatsappNumber] = useState(initial?.whatsappNumber ?? "");
   const [label, setLabel] = useState(initial?.label ?? "");
+  const [sector, setSector] = useState(initial?.sector ?? "");
   const [officeMail, setOfficeMail] = useState("");
   const createEmployee = useCreateEmployee();
   const updateEmployee = useUpdateEmployee();
@@ -1246,11 +1259,11 @@ function EmployeeForm({ initial, onClose }: { initial?: Employee; onClose: () =>
     e.preventDefault();
     try {
       if (isEdit && initial) {
-        await updateEmployee.mutateAsync({ code: initial.code, patch: { whatsappNumber, label } });
+        await updateEmployee.mutateAsync({ code: initial.code, patch: { whatsappNumber, label, sector } });
         await setAdminProfile.mutateAsync({ identifier: initial.code, patch: { officeMail } });
         toast.success(`${initial.code} updated`);
       } else {
-        await createEmployee.mutateAsync({ code, whatsappNumber, label });
+        await createEmployee.mutateAsync({ code, whatsappNumber, label, sector });
         toast.success(`${code.toUpperCase()} created — they'll set their own password on first login`);
       }
       onClose();
@@ -1303,12 +1316,23 @@ function EmployeeForm({ initial, onClose }: { initial?: Employee; onClose: () =>
           </div>
           <div>
             <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-              Label (optional)
+              Name (optional)
             </label>
             <input
               value={label}
               onChange={(e) => setLabel(e.target.value)}
-              placeholder="Downtown flagship"
+              placeholder="Employee name"
+              className="w-full rounded-xl border bg-background px-3.5 py-2.5 text-sm outline-none ring-primary/30 focus:ring-2"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+              Sector (optional)
+            </label>
+            <input
+              value={sector}
+              onChange={(e) => setSector(e.target.value)}
+              placeholder="e.g. Human Resource, Finance and Accounts"
               className="w-full rounded-xl border bg-background px-3.5 py-2.5 text-sm outline-none ring-primary/30 focus:ring-2"
             />
           </div>

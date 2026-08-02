@@ -54,7 +54,10 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
     body: opts.body === undefined ? undefined : opts.isForm ? (opts.body as FormData) : JSON.stringify(opts.body),
   });
 
-  if (res.status === 401 && !opts._retried) {
+  // Only a 401 on a request that actually carried an access token can mean
+  // "your session expired" — a 401 with no token (e.g. bad login credentials)
+  // means exactly what the server says, so it falls through and surfaces below.
+  if (res.status === 401 && !opts._retried && token) {
     const newToken = await refreshAccessToken();
     if (newToken) return request<T>(path, { ...opts, _retried: true });
     clearSession();

@@ -42,6 +42,7 @@ import { connectSocket, disconnectSocket } from "@/lib/socket-client";
 import { MediaComposer, AttachmentPreview } from "@/components/tracker/MediaComposer";
 import { AvatarUpload, ChangePasswordSection } from "@/components/tracker/ProfileEditor";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { toast } from "sonner";
 import { useSyncExternalStore } from "react";
 
@@ -329,12 +330,15 @@ function Sidebar({
         })}
       </nav>
       <div className="border-t p-3">
-        <button
-          onClick={onLogout}
-          className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
-        >
-          <LogOut className="h-4 w-4" /> Sign out
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onLogout}
+            className="flex flex-1 items-center gap-2 rounded-xl px-3 py-2 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
+          >
+            <LogOut className="h-4 w-4" /> Sign out
+          </button>
+          <ThemeToggle />
+        </div>
       </div>
     </>
   );

@@ -79,6 +79,7 @@ import {
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin")({
@@ -216,6 +217,7 @@ function AdminPage() {
           >
             <LogOut className="h-4 w-4" />
           </button>
+          <ThemeToggle />
         </div>
       </div>
     </>

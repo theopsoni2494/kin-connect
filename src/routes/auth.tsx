@@ -135,7 +135,7 @@ function AuthPage() {
                 value={id}
                 onChange={(e) => setId(e.target.value.toUpperCase())}
                 placeholder={role === "admin" ? "KN-01" : "Username"}
-                className="w-full rounded-xl border border-white/50 bg-white/70 px-3.5 py-2.5 text-sm text-foreground outline-none ring-primary/30 transition placeholder:text-muted-foreground focus:bg-white focus:ring-2"
+                className="w-full rounded-xl border border-white/50 bg-white/70 px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-primary/30 transition placeholder:text-slate-500 focus:bg-white focus:ring-2"
               />
             </div>
             <div>
@@ -144,8 +144,8 @@ function AuthPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                inputClassName="w-full rounded-xl border border-white/50 bg-white/70 px-3.5 py-2.5 text-sm text-foreground outline-none ring-primary/30 transition placeholder:text-muted-foreground focus:bg-white focus:ring-2"
-                iconClassName="text-muted-foreground/80"
+                inputClassName="w-full rounded-xl border border-white/50 bg-white/70 px-3.5 py-2.5 text-sm text-slate-900 outline-none ring-primary/30 transition placeholder:text-slate-500 focus:bg-white focus:ring-2"
+                iconClassName="text-slate-500 hover:text-slate-700"
               />
               {role === "employee" && (
                 <p className="mt-1.5 text-[11px] text-white/80">

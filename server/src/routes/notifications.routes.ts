@@ -61,3 +61,39 @@ notificationsRouter.get(
     );
   }),
 );
+
+// Deletes (not just marks-read) every notification this user currently sees
+// in their Notifications tab — scoped by the exact same filters as GET /me,
+// so this can never touch another user's rows or other channels/event types.
+notificationsRouter.delete(
+  "/me",
+  asyncHandler(async (req: AuthedRequest, res) => {
+    const auth = req.auth!;
+    if (auth.role === "employee") {
+      await db
+        .delete(notifications)
+        .where(
+          and(
+            eq(notifications.recipientType, "employee"),
+            eq(notifications.recipientEmployeeCode, auth.sub),
+            eq(notifications.eventType, "ticket_replied"),
+            eq(notifications.channel, "inapp"),
+          ),
+        );
+    } else if (auth.role === "admin") {
+      await db
+        .delete(notifications)
+        .where(
+          and(
+            eq(notifications.recipientType, "admin"),
+            eq(notifications.recipientAdminId, auth.sub),
+            eq(notifications.eventType, "ticket_created"),
+            eq(notifications.channel, "inapp"),
+          ),
+        );
+    } else {
+      throw new HttpError(403, "unsupported role");
+    }
+    res.status(204).end();
+  }),
+);

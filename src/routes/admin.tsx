@@ -53,6 +53,7 @@ import {
   useAdminSetProfile,
   useDepartments,
   useNotifications,
+  useClearNotifications,
   useUploadAttachment,
   useSendBroadcast,
   useProfile,
@@ -353,7 +354,7 @@ function AdminProfilePanel({ code, name, onClose }: { code: string; name: string
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="+1 555 000 0000"
+              placeholder="+243 999 000 000"
               className="w-full rounded-xl border bg-background px-3.5 py-2.5 text-sm outline-none ring-primary/30 focus:ring-2"
             />
           </div>
@@ -392,11 +393,56 @@ function AdminProfilePanel({ code, name, onClose }: { code: string; name: string
 
 function AdminNotificationsView() {
   const { data: notifications = [] } = useNotifications();
+  const clearNotifications = useClearNotifications();
+  const [confirmingClear, setConfirmingClear] = useState(false);
+
+  async function confirmClear() {
+    try {
+      await clearNotifications.mutateAsync();
+      toast.success("Notifications cleared");
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setConfirmingClear(false);
+    }
+  }
 
   return (
     <div>
-      <h1 className="text-3xl font-semibold tracking-tight">Notifications</h1>
-      <p className="mt-2 text-sm text-muted-foreground">New queries registered in your department.</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">Notifications</h1>
+          <p className="mt-2 text-sm text-muted-foreground">New queries registered in your department.</p>
+        </div>
+        {notifications.length > 0 && (
+          <button
+            onClick={() => setConfirmingClear(true)}
+            className="inline-flex items-center gap-1.5 rounded-xl border bg-background px-4 py-2.5 text-sm font-medium text-destructive shadow-sm transition hover:bg-destructive/10"
+          >
+            <Trash2 className="h-4 w-4" /> Clear all
+          </button>
+        )}
+      </div>
+
+      <AlertDialog open={confirmingClear} onOpenChange={setConfirmingClear}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear all notifications?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently deletes every notification in this list. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmClear}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Clear all
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {notifications.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed bg-card/40 py-16 text-center text-sm text-muted-foreground">
@@ -621,14 +667,26 @@ function CredentialsView() {
   const [importResult, setImportResult] = useState<BulkImportResult | null>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState("");
+  const [sectorFilter, setSectorFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "frozen">("all");
+
+  const sectors = useMemo(() => {
+    const set = new Set<string>();
+    for (const e of employees) if (e.sector) set.add(e.sector);
+    return Array.from(set).sort();
+  }, [employees]);
 
   const filteredEmployees = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return employees;
-    return employees.filter(
-      (e) => e.code.toLowerCase().includes(q) || (e.label ?? "").toLowerCase().includes(q),
-    );
-  }, [employees, search]);
+    return employees.filter((e) => {
+      if (q && !(e.code.toLowerCase().includes(q) || (e.label ?? "").toLowerCase().includes(q))) return false;
+      if (sectorFilter !== "all" && (e.sector ?? "") !== sectorFilter) return false;
+      const active = e.isActive ?? true;
+      if (statusFilter === "active" && !active) return false;
+      if (statusFilter === "frozen" && active) return false;
+      return true;
+    });
+  }, [employees, search, sectorFilter, statusFilter]);
 
   async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -746,21 +804,44 @@ function CredentialsView() {
         </div>
       ) : (
         <>
-          <div className="relative mt-6 max-w-sm">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by employee code…"
-              className="w-full rounded-xl border bg-background py-2.5 pl-9 pr-3.5 text-sm outline-none ring-primary/30 focus:ring-2"
-            />
+          <div className="mt-6 flex flex-wrap gap-2">
+            <div className="relative max-w-sm flex-1 min-w-[220px]">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by employee code or name…"
+                className="w-full rounded-xl border bg-background py-2.5 pl-9 pr-3.5 text-sm outline-none ring-primary/30 focus:ring-2"
+              />
+            </div>
+            <select
+              value={sectorFilter}
+              onChange={(e) => setSectorFilter(e.target.value)}
+              className="rounded-xl border bg-background px-3.5 py-2.5 text-sm outline-none ring-primary/30 focus:ring-2"
+            >
+              <option value="all">All sectors</option>
+              {sectors.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as "all" | "active" | "frozen")}
+              className="rounded-xl border bg-background px-3.5 py-2.5 text-sm outline-none ring-primary/30 focus:ring-2"
+            >
+              <option value="all">All statuses</option>
+              <option value="active">Active</option>
+              <option value="frozen">Frozen</option>
+            </select>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
             Showing {filteredEmployees.length} of {employees.length} employees
           </p>
           {filteredEmployees.length === 0 ? (
             <div className="mt-4 rounded-2xl border border-dashed bg-card/40 py-16 text-center text-sm text-muted-foreground">
-              No employee matches "{search}".
+              No employee matches the current search/filters.
             </div>
           ) : (
         <div className="mt-4 overflow-x-auto rounded-2xl border bg-card shadow-sm">
@@ -1068,10 +1149,11 @@ function AdminForm({ initial, onClose }: { initial?: Admin; onClose: () => void 
           id: initial.id,
           patch: {
             name,
+            ...(code.trim().toUpperCase() !== initial.code ? { code } : {}),
             ...(initial.isMaster ? {} : { departmentIds }),
           },
         });
-        toast.success(`${initial.code} updated`);
+        toast.success(`${code.toUpperCase()} updated`);
       } else {
         if (!isMaster && departmentIds.length === 0) return toast.error("Select at least one department");
         await createAdmin.mutateAsync({
@@ -1108,11 +1190,15 @@ function AdminForm({ initial, onClose }: { initial?: Admin; onClose: () => void 
             <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Admin Code</label>
             <input
               value={code}
-              disabled={isEdit}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               placeholder="KN-09"
-              className="w-full rounded-xl border bg-background px-3.5 py-2.5 font-mono text-sm uppercase outline-none ring-primary/30 focus:ring-2 disabled:opacity-60"
+              className="w-full rounded-xl border bg-background px-3.5 py-2.5 font-mono text-sm uppercase outline-none ring-primary/30 focus:ring-2"
             />
+            {isEdit && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Changing this changes the login username immediately — make sure the admin knows.
+              </p>
+            )}
           </div>
           <div>
             <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Name</label>
@@ -1312,7 +1398,7 @@ function EmployeeForm({ initial, onClose }: { initial?: Employee; onClose: () =>
             <input
               value={whatsappNumber}
               onChange={(e) => setWhatsappNumber(e.target.value)}
-              placeholder="+91••••••••••"
+              placeholder="+243••••••••••"
               className="w-full rounded-xl border bg-background px-3.5 py-2.5 font-mono text-sm outline-none ring-primary/30 focus:ring-2"
             />
           </div>

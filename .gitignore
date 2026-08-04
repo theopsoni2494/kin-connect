@@ -32,3 +32,6 @@ dist-ssr
 *.sln
 *.sw?
 Book1.xlsx
+
+# Local-only reference doc — kept on disk, never pushed (privacy)
+PROJECT_CONTEXT.md

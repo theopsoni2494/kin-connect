@@ -19,7 +19,7 @@ async function main() {
   }
 
   console.log("Seeding demo employee (STR-1042)...");
-  const demoWhatsapp = "+919800001042";
+  const demoWhatsapp = "+243980001042";
   await db
     .insert(employees)
     .values({

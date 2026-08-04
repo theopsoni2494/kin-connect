@@ -29,6 +29,7 @@ export function useUploadAttachment() {
       const form = new FormData();
       form.append("kind", input.kind);
       form.append("file", input.file as Blob, input.fileName ?? "upload");
+      if (input.text?.trim()) form.append("text", input.text.trim());
       return apiUpload<Attachment>("/attachments", form);
     },
   });
@@ -93,6 +94,14 @@ export function useNotifications() {
       apiGet<{ id: string; message: string | null; ticketId: string | null; createdAt: string }[]>(
         "/notifications/me",
       ),
+  });
+}
+
+export function useClearNotifications() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiDelete<void>("/notifications/me"),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
   });
 }
 
@@ -188,7 +197,7 @@ export function useCreateAdmin() {
 export function useUpdateAdmin() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: { id: string; patch: { name?: string; isActive?: boolean; departmentIds?: number[] } }) =>
+    mutationFn: (input: { id: string; patch: { code?: string; name?: string; isActive?: boolean; departmentIds?: number[] } }) =>
       apiPatch<Admin>(`/admin/admins/${input.id}`, input.patch),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admins"] }),
   });

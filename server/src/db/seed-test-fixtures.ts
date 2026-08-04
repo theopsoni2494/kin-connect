@@ -9,7 +9,7 @@ async function main() {
   console.log("Seeding passwordless test employee (TEST-NEW)...");
   await db
     .insert(employees)
-    .values({ code: "TEST-NEW", passwordHash: null, label: "Passwordless test account", whatsappNumber: "+919800009999" })
+    .values({ code: "TEST-NEW", passwordHash: null, label: "Passwordless test account", whatsappNumber: "+243980000999" })
     .onConflictDoNothing({ target: employees.code });
 
   const [dept] = await db.select().from(departments).where(eq(departments.slug, "energy_utility")).limit(1);

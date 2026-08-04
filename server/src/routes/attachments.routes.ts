@@ -40,6 +40,7 @@ attachmentsRouter.post(
       req.file.buffer,
       req.file.originalname,
       req.file.mimetype,
+      (req.body?.text as string)?.trim(),
     );
     res.status(201).json(await toAttachmentDto(row));
   }),

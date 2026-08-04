@@ -19,6 +19,7 @@ export async function createFileAttachment(
   buffer: Buffer,
   originalName: string,
   mimeType: string,
+  text?: string,
 ) {
   const { path } = await uploadAttachmentBuffer(buffer, originalName, mimeType, "tickets");
   const [row] = await db
@@ -30,6 +31,7 @@ export async function createFileAttachment(
       originalName,
       mimeType,
       sizeBytes: buffer.byteLength,
+      textContent: text || null,
     })
     .returning();
   return row;
@@ -54,5 +56,5 @@ export async function toAttachmentDto(a: AttachmentRow): Promise<AttachmentDto> 
     return { id: a.id, kind: a.kind, text: a.textContent };
   }
   const url = a.storagePath ? await getSignedAttachmentUrl(a.storagePath).catch(() => null) : null;
-  return { id: a.id, kind: a.kind, name: a.originalName, mimeType: a.mimeType, url };
+  return { id: a.id, kind: a.kind, name: a.originalName, mimeType: a.mimeType, url, text: a.textContent };
 }

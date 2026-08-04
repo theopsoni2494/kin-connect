@@ -77,6 +77,7 @@ export const createAdminSchema = z
   });
 
 export const updateAdminSchema = z.object({
+  code: z.string().trim().min(1).optional(),
   name: z.string().trim().optional(),
   isActive: z.boolean().optional(),
   departmentIds: z.array(z.coerce.number().int().positive()).optional(),

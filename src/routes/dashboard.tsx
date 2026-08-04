@@ -20,8 +20,19 @@ import {
   Bell,
   BellRing,
   Menu,
+  Trash2,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { getSession, subscribeSession } from "@/lib/session";
 import { logout } from "@/lib/auth-client";
 import { BRAND_NAME } from "@/lib/brand";
@@ -34,6 +45,7 @@ import {
   useCloseTicket,
   useEmployeeBroadcasts,
   useNotifications,
+  useClearNotifications,
   useProfile,
   useSetProfile,
 } from "@/lib/tracker-queries";
@@ -652,11 +664,56 @@ function AlertsView() {
 
 function EmployeeNotificationsView() {
   const { data: notifications = [] } = useNotifications();
+  const clearNotifications = useClearNotifications();
+  const [confirmingClear, setConfirmingClear] = useState(false);
+
+  async function confirmClear() {
+    try {
+      await clearNotifications.mutateAsync();
+      toast.success("Notifications cleared");
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setConfirmingClear(false);
+    }
+  }
 
   return (
     <div>
-      <h1 className="text-3xl font-semibold tracking-tight">Notifications</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Updates on queries you've raised.</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight">Notifications</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Updates on queries you've raised.</p>
+        </div>
+        {notifications.length > 0 && (
+          <button
+            onClick={() => setConfirmingClear(true)}
+            className="inline-flex items-center gap-1.5 rounded-xl border bg-background px-4 py-2.5 text-sm font-medium text-destructive shadow-sm transition hover:bg-destructive/10"
+          >
+            <Trash2 className="h-4 w-4" /> Clear all
+          </button>
+        )}
+      </div>
+
+      <AlertDialog open={confirmingClear} onOpenChange={setConfirmingClear}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear all notifications?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently deletes every notification in this list. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmClear}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Clear all
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {notifications.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed bg-card/40 py-16 text-center text-sm text-muted-foreground">
@@ -810,7 +867,7 @@ function ProfilePanel({ identifier, onClose }: { identifier: string; onClose: ()
           <input
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            placeholder="+1 555 000 0000"
+            placeholder="+243 999 000 000"
             className="w-full rounded-xl border bg-background px-3.5 py-2.5 text-sm outline-none ring-primary/30 focus:ring-2"
           />
         </Field>

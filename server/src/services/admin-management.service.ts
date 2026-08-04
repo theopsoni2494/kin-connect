@@ -76,7 +76,7 @@ export async function createAdmin(input: {
 
 export async function updateAdmin(
   id: string,
-  patch: { name?: string; isActive?: boolean; departmentIds?: number[] },
+  patch: { code?: string; name?: string; isActive?: boolean; departmentIds?: number[] },
 ): Promise<AdminDto> {
   const existing = await db.query.admins.findFirst({ where: eq(admins.id, id) });
   if (!existing) throw new HttpError(404, "admin not found");
@@ -84,6 +84,17 @@ export async function updateAdmin(
   const updates: Partial<typeof admins.$inferInsert> = { updatedAt: new Date() };
   if (patch.name !== undefined) updates.name = patch.name.trim();
   if (patch.isActive !== undefined) updates.isActive = patch.isActive;
+  if (patch.code !== undefined) {
+    const code = patch.code.trim().toUpperCase();
+    const existingAdmin = await db.query.admins.findFirst({ where: eq(admins.code, code) });
+    if (existingAdmin && existingAdmin.id !== id) throw new HttpError(409, "admin code already exists");
+    // Same shared-namespace rule as createAdmin — a code can't be a live employee and a live admin at once.
+    const takenByEmployee = await db.query.employees.findFirst({ where: eq(employees.code, code) });
+    if (takenByEmployee) {
+      throw new HttpError(409, "this code is already registered as an employee account — delete it there first");
+    }
+    updates.code = code;
+  }
 
   const [row] = await db.update(admins).set(updates).where(eq(admins.id, id)).returning();
 

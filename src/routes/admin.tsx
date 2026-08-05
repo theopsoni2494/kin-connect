@@ -1615,12 +1615,14 @@ function DownloadView() {
 }
 
 function BroadcastView() {
+  const session = useSession();
   const { data: employees = [] } = useEmployees();
   const [selectedCodes, setSelectedCodes] = useState<string[]>([]);
   const [msg, setMsg] = useState("");
   const [attachment, setAttachment] = useState<Attachment | null>(null);
   const uploadAttachment = useUploadAttachment();
   const sendBroadcast = useSendBroadcast();
+  const allSelected = employees.length > 0 && selectedCodes.length === employees.length;
 
   function toggleCode(code: string) {
     setSelectedCodes((prev) => (prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]));
@@ -1649,16 +1651,28 @@ function BroadcastView() {
       return toast.error("Select at least one employee and enter a message");
     }
     try {
-      await Promise.all(
-        selectedCodes.map((code) =>
-          sendBroadcast.mutateAsync({
-            targetType: "employee",
-            targetEmployeeCode: code,
-            message: msg,
-            attachmentId: attachment?.id,
-          }),
-        ),
-      );
+      if (allSelected && session?.isMaster) {
+        // One request for the whole company instead of one per employee —
+        // at hundreds of employees, firing that many concurrent requests
+        // could exhaust the DB connection pool and make the send look like
+        // it failed even when most of it went through.
+        await sendBroadcast.mutateAsync({
+          targetType: "all",
+          message: msg,
+          attachmentId: attachment?.id,
+        });
+      } else {
+        await Promise.all(
+          selectedCodes.map((code) =>
+            sendBroadcast.mutateAsync({
+              targetType: "employee",
+              targetEmployeeCode: code,
+              message: msg,
+              attachmentId: attachment?.id,
+            }),
+          ),
+        );
+      }
       toast.success(`Alert sent to ${selectedCodes.length} ${selectedCodes.length === 1 ? "employee" : "employees"}`);
       setSelectedCodes([]);
       setMsg("");

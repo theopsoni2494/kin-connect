@@ -10,7 +10,7 @@ import {
   getTicketScoped,
 } from "../services/ticket.service.js";
 import { db } from "../db/client.js";
-import { departments, adminDepartments } from "../db/schema.js";
+import { departments, adminDepartments, admins } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 import { emitTicketCreated, emitTicketReplied, emitTicketClosed } from "../sockets/emit.js";
 import { dispatchNotification } from "../notifications/dispatcher.js";
@@ -40,6 +40,12 @@ ticketsRouter.post(
       .select({ adminId: adminDepartments.adminId })
       .from(adminDepartments)
       .where(eq(adminDepartments.departmentId, ticket.departmentId));
+    // Master admins aren't rows in admin_departments (they're unrestricted,
+    // not scoped) but they do join every department's socket room, so they
+    // see the pop-up + dot for every new ticket — without this they'd get
+    // the dot with no matching row in the Notifications tab.
+    const masterAdmins = await db.select({ id: admins.id }).from(admins).where(eq(admins.isMaster, true));
+    const notifyAdminIds = new Set([...deptAdmins.map((a) => a.adminId), ...masterAdmins.map((a) => a.id)]);
     const adminMessage = `You have a new query from Employee ID: ${ticket.employeeCode}. Kindly address it.`;
 
     emitTicketCreated({
@@ -57,10 +63,10 @@ ticketsRouter.post(
       message: renderMessage("ticket_created", { ticketId: ticket.id, departmentName: dept?.name }),
     }).catch((err) => console.error("notification dispatch failed", err));
 
-    // Notify the department's assigned admin(s) — this is what powers their
-    // in-app pop-up + sound + the Notifications tab, distinct from the
-    // employee-facing confirmation dispatched above.
-    for (const { adminId } of deptAdmins) {
+    // Notify the department's assigned admin(s) plus every master admin —
+    // this is what powers their in-app pop-up + sound + the Notifications
+    // tab, distinct from the employee-facing confirmation dispatched above.
+    for (const adminId of notifyAdminIds) {
       dispatchNotification({
         eventType: "ticket_created",
         ticketId: ticket.id,

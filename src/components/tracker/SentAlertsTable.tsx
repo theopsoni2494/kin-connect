@@ -30,8 +30,14 @@ export function SentAlertsTable() {
         <tbody>
           {broadcasts.map((b) => (
             <tr key={b.id} className="border-b last:border-0 align-top transition hover:bg-muted/30">
-              <td className="px-5 py-3 font-mono text-xs">
-                {b.targetType === "employee" ? b.targetEmployeeCode : b.targetType}
+              <td className="px-5 py-3 text-xs">
+                {b.targetType === "employee" ? (
+                  <span className="font-mono">{b.targetEmployeeCode}</span>
+                ) : b.targetType === "all" ? (
+                  <span className="font-medium">All employees</span>
+                ) : (
+                  <span className="font-medium">Department</span>
+                )}
               </td>
               <td className="max-w-sm px-5 py-3">
                 <p className="line-clamp-2 text-foreground">{b.message}</p>
